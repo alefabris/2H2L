@@ -53,3 +53,33 @@ h2 small {
   color: #555;
   font-size: 0.95em;
 }
+
+.game {
+  margin: 30px 20px;
+  padding: 15px;
+  background: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+.game h2 {
+  margin-bottom: 5px;
+}
+
+.game small {
+  font-size: 0.7em;
+  color: #666;
+}
+
+.expansion {
+  margin-left: 20px;
+  margin-top: 10px;
+}
+
+.expansion span {
+  display: block;
+  margin-left: 10px;
+  color: #555;
+  font-size: 0.95em;
+}
+
