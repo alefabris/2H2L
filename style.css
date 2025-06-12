@@ -5,12 +5,16 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
+  background-color: #0e0e0e; /* o il tuo colore principale */
   margin: 0;
-  font-family: 'Inter', sans-serif;
-  background-color: #0e0e0e;
-  color: #e5e5f7;
-  line-height: 1.6;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* HEADINGS */
