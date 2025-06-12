@@ -137,3 +137,22 @@ iframe {
     height: 300px;
   }
 }
+
+.home-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.home-hero h1 {
+  font-size: 2.4rem;
+  margin-bottom: 15px;
+}
+
+.home-hero p {
+  font-size: 1.2rem;
+  color: #ccc;
+}
