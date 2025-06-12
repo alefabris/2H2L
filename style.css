@@ -158,3 +158,23 @@ iframe {
   font-size: 1.2rem;
   color: #ccc;
 }
+
+.join-button {
+  background: #bb86fc;
+  color: #111;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-family: 'Orbitron', sans-serif;
+  box-shadow: 0 0 12px #bb86fc88;
+  transition: all 0.3s ease-in-out;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.join-button:hover {
+  background: #d0a8ff;
+  color: #fff;
+  box-shadow: 0 0 20px #d0a8ffcc;
+  text-shadow: 0 0 5px #fff;
+}
