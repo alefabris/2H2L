@@ -1,83 +1,78 @@
-/* Reset and base dark theme */
+/* GENERAL RESET & DARK THEME */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: sans-serif;
   margin: 0;
-  padding: 0;
+  font-family: system-ui, sans-serif;
   background-color: #111;
   color: #eee;
+  line-height: 1.6;
 }
 
-nav {
-  background: #000;
-  padding: 10px;
-}
-
-nav ul {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-}
-
-nav li {
-  margin: 5px;
-}
-
-nav a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-nav a:hover {
-  text-decoration: underline;
-}
-
-h1, h2 {
-  color: #fff;
-  padding-left: 20px;
-  font-size: 1.8em;
-}
-
-p, .game, .expansion, span, small {
-  padding-left: 20px;
-  padding-right: 20px;
-  color: #ccc;
-}
-
-.game {
-  background: #1c1c1c;
-  margin: 30px 20px;
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
-}
-
-.game h2 a {
+a {
   color: #4dabf7;
   text-decoration: none;
 }
 
-.game h2 small {
-  font-size: 0.7em;
-  color: #888;
+a:hover {
+  text-decoration: underline;
+}
+
+/* NAVIGATION */
+nav {
+  background-color: #000;
+  padding: 10px;
+}
+
+nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+nav li {
+  margin: 5px 10px;
+}
+
+nav a {
+  font-weight: bold;
+  color: #fff;
+}
+
+/* HEADINGS */
+h1, h2 {
+  color: #fff;
+  margin: 20px;
+  font-size: 1.6rem;
+}
+
+small {
+  font-size: 0.8em;
+  color: #999;
+}
+
+/* PAGE CONTENT */
+p {
+  margin: 0 20px 20px;
+}
+
+/* GAME BLOCKS */
+.game {
+  background: #1c1c1c;
+  margin: 20px;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
 }
 
 .expansion {
   margin-left: 20px;
   margin-top: 10px;
-}
-
-.expansion a {
-  color: #80d0ff;
-  text-decoration: none;
-}
-
-.expansion a:hover {
-  text-decoration: underline;
 }
 
 .expansion span {
@@ -87,36 +82,41 @@ p, .game, .expansion, span, small {
   font-size: 0.95em;
 }
 
-/* Map responsive sizing */
+/* MAP */
 #map,
 iframe {
-  width: 90%;
+  width: 95%;
   max-width: 800px;
-  margin: 0 auto;
+  height: 400px;
+  margin: 20px auto;
   display: block;
   border: 1px solid #333;
   border-radius: 5px;
 }
 
-/* Responsive adjustments */
+/* RESPONSIVE BEHAVIOR */
 @media (max-width: 600px) {
+  h1, h2, p {
+    margin: 15px;
+    font-size: 1.2rem;
+  }
+
+  .game {
+    margin: 15px 10px;
+    padding: 10px;
+  }
+
   nav ul {
     flex-direction: column;
     align-items: center;
   }
 
-  h1, h2 {
-    padding-left: 10px;
-    font-size: 1.4em;
+  nav li {
+    margin: 8px 0;
   }
 
-  .game {
-    margin: 20px 10px;
-    padding: 10px;
-  }
-
-  p, .expansion, .expansion span {
-    padding-left: 10px;
-    padding-right: 10px;
+  #map,
+  iframe {
+    height: 300px;
   }
 }
