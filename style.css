@@ -88,8 +88,11 @@ nav a:hover {
 }
 
 .expansion a {
+  font-family: 'Orbitron', sans-serif;
   color: #9f7aea;
-  font-weight: bold;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .expansion span {
