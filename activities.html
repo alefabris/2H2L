@@ -10,13 +10,27 @@
   <style>
     #map {
       height: 400px;
-      margin: 20px;
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto;
       border-radius: 5px;
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+      display: block;
+    }
+
+    .activity-wrapper {
+      text-align: center;
+      margin: 30px auto;
+      max-width: 800px;
+      padding: 0 20px;
+    }
+
+    .activity-wrapper a {
+      color: #bb86fc;
     }
   </style>
 </head>
-  
+
 <body>
   <nav>
     <ul>
@@ -27,16 +41,18 @@
     </ul>
   </nav>
 
-  <h1>Activities</h1>
-  <p style="margin: 20px;">
-    We meet every <strong>Monday at 20:00</strong> in <strong>Room 1, ground floor</strong> of the
-    <strong>
-      <a href="https://www.google.com/maps/search/?api=1&query=Centro+Socio+Culturale,+Zanè" target="_blank">
-        Centro Socio Culturale, Zanè
-      </a>
-    </strong>
-    (aka the old town hall).
-  </p>
+  <div class="activity-wrapper">
+    <h1>Activities</h1>
+    <p>
+      We meet every <strong>Monday at 20:00</strong> in <strong>Room 1, ground floor</strong> of the
+      <strong>
+        <a href="https://www.google.com/maps/search/?api=1&query=Centro+Socio+Culturale,+Zanè" target="_blank">
+          Centro Socio Culturale, Zanè
+        </a>
+      </strong>
+      (aka the old town hall).
+    </p>
+  </div>
 
   <div id="map"></div>
 
