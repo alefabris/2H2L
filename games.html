@@ -120,30 +120,67 @@
     const playerFilter = document.getElementById('playerFilter');
     const timeFilter = document.getElementById('timeFilter');
     const games = document.querySelectorAll('.game');
-
-    function parseMetaValue(text, icon) {
-      const match = text.match(new RegExp(icon + ':\\s*(\\d+)'));
-      return match ? parseInt(match[1]) : null;
+  
+    function parsePlayerRange(text) {
+      const match = text.match(/👥:\s*(\d+)[–-](\d+)/);
+      if (match) {
+        return {
+          min: parseInt(match[1]),
+          max: parseInt(match[2])
+        };
+      }
+      return null;
     }
-
+  
+    function getURLParams() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('players')) playerFilter.value = params.get('players');
+      if (params.has('time')) timeFilter.value = params.get('time');
+    }
+  
+    function updateURLParams() {
+      const params = new URLSearchParams();
+      if (playerFilter.value) params.set('players', playerFilter.value);
+      if (timeFilter.value) params.set('time', timeFilter.value);
+      const newUrl = window.location.pathname + '?' + params.toString();
+      history.replaceState({}, '', newUrl);
+    }
+  
     function filterGames() {
-      const minPlayers = parseInt(playerFilter.value);
-      const maxTime = parseInt(timeFilter.value);
-
+      const selectedPlayers = parseInt(playerFilter.value);
+      const selectedTime = parseInt(timeFilter.value);
+  
       games.forEach(game => {
         const metaText = game.querySelector('.game-meta')?.textContent || '';
-        const players = parseMetaValue(metaText, '👥');
-        const time = parseMetaValue(metaText, '⏱️');
-
-        const matchPlayers = isNaN(minPlayers) || (players >= minPlayers);
-        const matchTime = isNaN(maxTime) || (time <= maxTime);
-
+        const playerRange = parsePlayerRange(metaText);
+        const timeMatch = metaText.match(/⏱️:\s*(\d+)/);
+        const gameTime = timeMatch ? parseInt(timeMatch[1]) : null;
+  
+        let matchPlayers = true;
+        let matchTime = true;
+  
+        if (!isNaN(selectedPlayers) && playerRange) {
+          matchPlayers = selectedPlayers >= playerRange.min && selectedPlayers <= playerRange.max;
+        }
+  
+        if (!isNaN(selectedTime) && gameTime !== null) {
+          matchTime = gameTime <= selectedTime;
+        }
+  
         game.style.display = (matchPlayers && matchTime) ? '' : 'none';
       });
+  
+      updateURLParams();
     }
-
+  
     playerFilter.addEventListener('change', filterGames);
     timeFilter.addEventListener('change', filterGames);
+  
+    window.addEventListener('DOMContentLoaded', () => {
+      getURLParams();
+      filterGames();
+    });
   </script>
+
 </body>
 </html>
