@@ -187,3 +187,14 @@ iframe {
   box-shadow: 0 0 20px #d0a8ffcc;
   text-shadow: 0 0 5px #fff;
 }
+
+a {
+  color: #bb86fc;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
