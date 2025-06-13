@@ -375,4 +375,12 @@ iframe {
   filter: hue-rotate(270deg) brightness(1.2) saturate(2);
 }
 
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  fill: #bb86fc;
+  filter: drop-shadow(0 0 4px #bb86fc66);
+  margin-right: 4px;
+}
 
