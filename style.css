@@ -214,3 +214,22 @@ iframe {
     height: 300px;
   }
 }
+
+.join-wrapper {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+  text-align: left;
+}
+
+/* JOIN PAGE */
+
+.join-wrapper h1 {
+  text-align: center;
+}
+
+.join-wrapper ol {
+  margin-left: 1.5rem;
+  padding-left: 1rem;
+  line-height: 1.6;
+}
