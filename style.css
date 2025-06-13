@@ -236,6 +236,15 @@ nav a {
   color: #c792ea;
   font-family: 'Inter', sans-serif;
   text-shadow: 0 0 6px #c792ea66;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.expansion-warning img {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
 }
 
 /* ACTIVITIES */
