@@ -242,6 +242,13 @@ nav a {
   margin-left: 5px;
 }
 
+.expansion-warning {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #ffc107;
+  font-style: italic;
+}
+
 /* ACTIVITIES */
 .activity-wrapper {
   text-align: center;
