@@ -39,7 +39,7 @@
           <option value="90">≤ 90'</option>
         </select>
       </label>
-      <button class="clear-filters" id="clearFilters">Reset Filters</button>
+      <button id="clearFilters" class="clear-filters">Reset Filters</button>
     </div>
 
     <!-- GAME: Blood Rage -->
@@ -72,7 +72,7 @@
       <small class="owner">(gasca98)</small>
     </div>
 
-    <!-- GAME: Witcher -->
+    <!-- GAME: The Witcher: Old World -->
     <div class="game" data-players="1-5">
       <div class="game-meta">
         <span>👥: 1–5 | ⏱️: 90–150'</span>
@@ -156,18 +156,21 @@
         if (!isNaN(selectedPlayers)) {
           matchPlayers = selectedPlayers >= min && selectedPlayers <= max;
 
-          const existingWarning = game.querySelector('.expansion-warning');
+          const existingWarn = game.querySelector('.expansion-warning');
           if (!matchPlayers && !isNaN(expansionMax) && selectedPlayers <= expansionMax) {
             matchPlayers = true;
-            if (!existingWarning) {
+            if (!existingWarn) {
               const warn = document.createElement('div');
               warn.className = 'expansion-warning';
               warn.textContent = `⚠️ Requires expansion to support ${selectedPlayers} players`;
               game.appendChild(warn);
             }
-          } else if (existingWarning) {
-            existingWarning.remove();
+          } else if (existingWarn) {
+            existingWarn.remove();
           }
+        } else {
+          const existingWarn = game.querySelector('.expansion-warning');
+          if (existingWarn) existingWarn.remove();
         }
 
         if (!isNaN(selectedTime) && gameTime !== null) {
@@ -182,9 +185,14 @@
 
     playerFilter.addEventListener('change', filterGames);
     timeFilter.addEventListener('change', filterGames);
+
     clearFilters.addEventListener('click', () => {
       playerFilter.value = '';
       timeFilter.value = '';
+
+      // Rimuovi tutti i warning
+      document.querySelectorAll('.expansion-warning').forEach(w => w.remove());
+
       filterGames();
     });
 
