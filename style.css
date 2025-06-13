@@ -159,7 +159,8 @@ nav a {
 .page-wrapper {
   max-width: 900px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 20px 60px;
+  background-color: #0e0e0e;
 }
 
 .page-wrapper h1 {
