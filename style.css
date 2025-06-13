@@ -122,13 +122,13 @@ nav a {
   padding: 12px 20px;
   border-radius: 6px;
   font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
   box-shadow: 0 0 12px #bb86fc88;
   transition: all 0.3s ease-in-out;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-align: center;
   text-decoration: none;
-  font-weight: bold;
 }
 
 .join-button:hover {
@@ -155,13 +155,32 @@ nav a {
   margin: 30px 0;
 }
 
+/* PAGE WRAPPER */
+.page-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-wrapper h1 {
+  text-align: center;
+}
+
 /* GAMES */
+.games-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
 .game {
   background: #1b1b1f;
-  margin: 0 20px 40px;
+  margin: 40px 0;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 0 15px #bb86fc22;
+  text-align: left;
   position: relative;
 }
 
@@ -183,14 +202,14 @@ nav a {
   text-align: right;
   font-size: 0.9rem;
   color: #ccc;
-  margin-top: 2px;
+  margin-bottom: 5px;
 }
 
 .owner {
   position: absolute;
   bottom: 10px;
   right: 20px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #999;
 }
 
@@ -217,24 +236,18 @@ nav a {
   font-size: 0.95em;
 }
 
+.expansion-note {
+  font-size: 0.8rem;
+  color: #9f7aea;
+  margin-left: 5px;
+}
+
 /* ACTIVITIES */
 .activity-wrapper {
   text-align: center;
   margin: 30px auto;
   max-width: 800px;
   padding: 0 20px;
-}
-
-/* MAP & IFRAME */
-#map,
-iframe {
-  width: 95%;
-  max-width: 800px;
-  height: 400px;
-  margin: 20px auto;
-  display: block;
-  border: 1px solid #333;
-  border-radius: 8px;
 }
 
 /* JOIN PAGE */
@@ -253,6 +266,18 @@ iframe {
   margin-left: 1.5rem;
   padding-left: 1rem;
   line-height: 1.6;
+}
+
+/* MAP & IFRAME */
+#map,
+iframe {
+  width: 95%;
+  max-width: 800px;
+  height: 400px;
+  margin: 20px auto;
+  display: block;
+  border: 1px solid #333;
+  border-radius: 8px;
 }
 
 /* RESPONSIVE */
@@ -280,50 +305,4 @@ iframe {
   iframe {
     height: 300px;
   }
-}
-
-.games-wrapper {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  text-align: center;
-}
-
-.game {
-  background: #1b1b1f;
-  margin: 40px 0;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 15px #bb86fc22;
-  text-align: left;
-}
-
-.game-meta {
-  font-size: 0.9rem;
-  color: #ccc;
-  margin-bottom: 5px;
-}
-
-.owner {
-  font-size: 0.7rem;
-  color: #999;
-  float: right;
-  margin-top: -1.2em;
-}
-
-.expansion-note {
-  font-size: 0.8rem;
-  color: #9f7aea;
-  margin-left: 5px;
-}
-
-/* PAGE WRAPPER */
-.page-wrapper {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.page-wrapper h1 {
-  text-align: center;
 }
