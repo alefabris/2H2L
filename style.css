@@ -281,3 +281,39 @@ iframe {
     height: 300px;
   }
 }
+
+.games-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.game {
+  background: #1b1b1f;
+  margin: 40px 0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #bb86fc22;
+  text-align: left;
+}
+
+.game-meta {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-bottom: 5px;
+}
+
+.owner {
+  font-size: 0.7rem;
+  color: #999;
+  float: right;
+  margin-top: -1.2em;
+}
+
+.expansion-note {
+  font-size: 0.8rem;
+  color: #9f7aea;
+  margin-left: 5px;
+}
+
