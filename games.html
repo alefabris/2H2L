@@ -48,7 +48,6 @@
       </div>
       <h2>
         <a href="https://boardgamegeek.com/boardgame/170216/blood-rage" target="_blank">Blood Rage</a>
-        <small class="owner">(gasca98)</small>
       </h2>
       <p>Battle-driven area control game set in Norse mythology.</p>
       <div class="expansion">
@@ -69,6 +68,7 @@
         </a>
         <span>Adds gods to the game, affecting each province with unique effects.</span>
       </div>
+      <small class="owner">(gasca98)</small>
     </div>
 
     <!-- GAME: Witcher -->
@@ -78,7 +78,6 @@
       </div>
       <h2>
         <a href="https://boardgamegeek.com/boardgame/331106/the-witcher-old-world" target="_blank">The Witcher: Old World</a>
-        <small class="owner">(gasca98)</small>
       </h2>
       <p>Adventure game set in the Witcher universe, where players are rival monster-hunters.</p>
       <div class="expansion">
@@ -87,6 +86,7 @@
         </a>
         <span>Adds unique and powerful monsters to the base game.</span>
       </div>
+      <small class="owner">(gasca98)</small>
     </div>
 
     <!-- GAME: Unicorn Overlord -->
@@ -98,9 +98,9 @@
         <a href="https://boardgamegeek.com/boardgame/412062/unicorn-overlord-official-card-game" target="_blank">
           Unicorn Overlord: Official Card Game
         </a>
-        <small class="owner">(gasca98)</small>
       </h2>
       <p>Card game inspired by the tactical RPG Unicorn Overlord, for fast-paced strategy duels.</p>
+      <small class="owner">(gasca98)</small>
     </div>
 
     <!-- GAME: Skull -->
@@ -110,9 +110,9 @@
       </div>
       <h2>
         <a href="https://boardgamegeek.com/boardgame/92415/skull" target="_blank">Skull</a>
-        <small class="owner">(RushHD)</small>
       </h2>
       <p>A bluffing game of danger, strategy and flowers.</p>
+      <small class="owner">(RushHD)</small>
     </div>
   </div>
 
@@ -154,7 +154,6 @@
         if (!isNaN(selectedPlayers)) {
           matchPlayers = selectedPlayers >= min && selectedPlayers <= max;
 
-          // Expansion fallback
           if (!matchPlayers && !isNaN(expansionMax)) {
             matchPlayers = selectedPlayers <= expansionMax;
 
