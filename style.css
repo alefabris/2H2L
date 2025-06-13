@@ -317,3 +317,13 @@ iframe {
   margin-left: 5px;
 }
 
+/* PAGE WRAPPER */
+.page-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-wrapper h1 {
+  text-align: center;
+}
