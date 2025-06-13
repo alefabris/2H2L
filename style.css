@@ -17,7 +17,7 @@ body {
   overflow-x: hidden;
 }
 
-body, p {
+body, p, li {
   font-family: 'Inter', sans-serif;
   color: #ffffff;
 }
