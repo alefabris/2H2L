@@ -19,6 +19,31 @@
   <div class="games-wrapper">
     <h1>Games</h1>
 
+    <!-- FILTER CONTROLS -->
+    <div class="filter-controls">
+      <label>
+        Players:
+        <select id="playerFilter">
+          <option value="">Any</option>
+          <option value="2">2+</option>
+          <option value="3">3+</option>
+          <option value="4">4+</option>
+          <option value="5">5+</option>
+        </select>
+      </label>
+
+      <label>
+        Duration:
+        <select id="timeFilter">
+          <option value="">Any</option>
+          <option value="30">≤ 30'</option>
+          <option value="60">≤ 60'</option>
+          <option value="90">≤ 90'</option>
+        </select>
+      </label>
+    </div>
+
+    <!-- GAMES LIST -->
     <div class="game">
       <div class="game-meta">
         <span>👥: 2–4 | ⏱️: 60–90'</span>
@@ -28,7 +53,6 @@
         <small class="owner">(gasca98)</small>
       </h2>
       <p>Battle-driven area control game set in Norse mythology.</p>
-
       <div class="expansion">
         <a href="https://boardgamegeek.com/boardgameexpansion/174506/blood-rage-5th-player-expansion" target="_blank">
           5th Player Expansion <span class="expansion-note">👥 +1 player</span>
@@ -58,7 +82,6 @@
         <small class="owner">(gasca98)</small>
       </h2>
       <p>Adventure game set in the Witcher universe, where players are rival monster-hunters.</p>
-
       <div class="expansion">
         <a href="https://boardgamegeek.com/boardgameexpansion/364789/the-witcher-old-world-exclusive-monster-pack" target="_blank">
           Exclusive Monster Pack
@@ -69,7 +92,7 @@
 
     <div class="game">
       <div class="game-meta">
-        <span>👥: 2-4 | ⏱️: 20–30'</span>
+        <span>👥: 2–4 | ⏱️: 20–30'</span>
       </div>
       <h2>
         <a href="https://boardgamegeek.com/boardgame/412062/unicorn-overlord-official-card-game" target="_blank">
@@ -91,5 +114,36 @@
       <p>A bluffing game of danger, strategy and flowers.</p>
     </div>
   </div>
+
+  <!-- FILTER SCRIPT -->
+  <script>
+    const playerFilter = document.getElementById('playerFilter');
+    const timeFilter = document.getElementById('timeFilter');
+    const games = document.querySelectorAll('.game');
+
+    function parseMetaValue(text, icon) {
+      const match = text.match(new RegExp(icon + ':\\s*(\\d+)'));
+      return match ? parseInt(match[1]) : null;
+    }
+
+    function filterGames() {
+      const minPlayers = parseInt(playerFilter.value);
+      const maxTime = parseInt(timeFilter.value);
+
+      games.forEach(game => {
+        const metaText = game.querySelector('.game-meta')?.textContent || '';
+        const players = parseMetaValue(metaText, '👥');
+        const time = parseMetaValue(metaText, '⏱️');
+
+        const matchPlayers = isNaN(minPlayers) || (players >= minPlayers);
+        const matchTime = isNaN(maxTime) || (time <= maxTime);
+
+        game.style.display = (matchPlayers && matchTime) ? '' : 'none';
+      });
+    }
+
+    playerFilter.addEventListener('change', filterGames);
+    timeFilter.addEventListener('change', filterGames);
+  </script>
 </body>
 </html>
