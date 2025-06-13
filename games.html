@@ -19,7 +19,6 @@
   <div class="games-wrapper">
     <h1>Games</h1>
 
-    <!-- FILTER CONTROLS -->
     <div class="filter-controls">
       <label>
         Players:
@@ -31,7 +30,6 @@
           <option value="5">5+</option>
         </select>
       </label>
-
       <label>
         Duration:
         <select id="timeFilter">
@@ -43,8 +41,8 @@
       </label>
     </div>
 
-    <!-- GAMES LIST -->
-    <div class="game">
+    <!-- GAME: Blood Rage -->
+    <div class="game" data-players="2-4" data-players-with-expansion="5">
       <div class="game-meta">
         <span>👥: 2–4 | ⏱️: 60–90'</span>
       </div>
@@ -73,7 +71,8 @@
       </div>
     </div>
 
-    <div class="game">
+    <!-- GAME: Witcher -->
+    <div class="game" data-players="1-5">
       <div class="game-meta">
         <span>👥: 1–5 | ⏱️: 90–150'</span>
       </div>
@@ -90,7 +89,8 @@
       </div>
     </div>
 
-    <div class="game">
+    <!-- GAME: Unicorn Overlord -->
+    <div class="game" data-players="2-4">
       <div class="game-meta">
         <span>👥: 2–4 | ⏱️: 20–30'</span>
       </div>
@@ -103,7 +103,8 @@
       <p>Card game inspired by the tactical RPG Unicorn Overlord, for fast-paced strategy duels.</p>
     </div>
 
-    <div class="game">
+    <!-- GAME: Skull -->
+    <div class="game" data-players="3-6">
       <div class="game-meta">
         <span>👥: 3–6 | ⏱️: 15–45'</span>
       </div>
@@ -115,29 +116,17 @@
     </div>
   </div>
 
-  <!-- FILTER SCRIPT -->
   <script>
     const playerFilter = document.getElementById('playerFilter');
     const timeFilter = document.getElementById('timeFilter');
     const games = document.querySelectorAll('.game');
-  
-    function parsePlayerRange(text) {
-      const match = text.match(/👥:\s*(\d+)[–-](\d+)/);
-      if (match) {
-        return {
-          min: parseInt(match[1]),
-          max: parseInt(match[2])
-        };
-      }
-      return null;
-    }
-  
+
     function getURLParams() {
       const params = new URLSearchParams(window.location.search);
       if (params.has('players')) playerFilter.value = params.get('players');
       if (params.has('time')) timeFilter.value = params.get('time');
     }
-  
+
     function updateURLParams() {
       const params = new URLSearchParams();
       if (playerFilter.value) params.set('players', playerFilter.value);
@@ -145,42 +134,60 @@
       const newUrl = window.location.pathname + '?' + params.toString();
       history.replaceState({}, '', newUrl);
     }
-  
+
     function filterGames() {
       const selectedPlayers = parseInt(playerFilter.value);
       const selectedTime = parseInt(timeFilter.value);
-  
+
       games.forEach(game => {
         const metaText = game.querySelector('.game-meta')?.textContent || '';
-        const playerRange = parsePlayerRange(metaText);
         const timeMatch = metaText.match(/⏱️:\s*(\d+)/);
         const gameTime = timeMatch ? parseInt(timeMatch[1]) : null;
-  
+
+        const dataPlayers = game.dataset.players || '';
+        const expansionMax = parseInt(game.dataset.playersWithExpansion || '0');
+        const [min, max] = dataPlayers.split('-').map(n => parseInt(n.trim()));
+
         let matchPlayers = true;
         let matchTime = true;
-  
-        if (!isNaN(selectedPlayers) && playerRange) {
-          matchPlayers = selectedPlayers >= playerRange.min && selectedPlayers <= playerRange.max;
+
+        if (!isNaN(selectedPlayers)) {
+          matchPlayers = selectedPlayers >= min && selectedPlayers <= max;
+
+          // Expansion fallback
+          if (!matchPlayers && !isNaN(expansionMax)) {
+            matchPlayers = selectedPlayers <= expansionMax;
+
+            let warn = game.querySelector('.expansion-warning');
+            if (!warn) {
+              warn = document.createElement('div');
+              warn.className = 'expansion-warning';
+              warn.textContent = `⚠️ Requires expansion to support ${selectedPlayers} players`;
+              game.appendChild(warn);
+            }
+          } else {
+            const warn = game.querySelector('.expansion-warning');
+            if (warn) warn.remove();
+          }
         }
-  
+
         if (!isNaN(selectedTime) && gameTime !== null) {
           matchTime = gameTime <= selectedTime;
         }
-  
+
         game.style.display = (matchPlayers && matchTime) ? '' : 'none';
       });
-  
+
       updateURLParams();
     }
-  
+
     playerFilter.addEventListener('change', filterGames);
     timeFilter.addEventListener('change', filterGames);
-  
+
     window.addEventListener('DOMContentLoaded', () => {
       getURLParams();
       filterGames();
     });
   </script>
-
 </body>
 </html>
