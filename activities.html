@@ -7,17 +7,6 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-    #map {
-      height: 400px;
-      width: 90%;
-      max-width: 800px;
-      margin: 20px auto;
-      border-radius: 5px;
-      box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
-      display: block;
-    }
-  </style>
 </head>
 <body>
   <nav>
@@ -29,20 +18,32 @@
     </ul>
   </nav>
 
-  <div class="activity-wrapper">
-    <h1>Activities</h1>
-    <p>
-      We meet every <strong>Monday at 20:00</strong> in <strong>Room 1, ground floor</strong> of the
-      <strong>
-        <a href="https://www.google.com/maps/search/?api=1&query=Centro+Socio+Culturale,+Zanè" target="_blank">
-          Centro Socio Culturale, Zanè
-        </a>
-      </strong>
-      (aka the old town hall).
-    </p>
-  </div>
+  <div class="page-wrapper">
+    <!-- EVENT SECTION -->
+    <section class="event-highlight">
+      <h2>Next Game Night</h2>
+      <p><strong>Date:</strong> <em>Coming soon</em></p>
+      <p><strong>Game:</strong> <a href="https://boardgamegeek.com/boardgame/170216/blood-rage" target="_blank">Blood Rage</a> with all expansions</p>
+      <p><strong>Spots available:</strong> up to 5 players</p>
+    </section>
 
-  <div id="map"></div>
+    <!-- MAIN DESCRIPTION -->
+    <div class="activity-wrapper">
+      <h1>Activities</h1>
+      <p>
+        We meet every <strong>Monday at 20:00</strong> in <strong>Room 1, ground floor</strong> of the
+        <strong>
+          <a href="https://www.google.com/maps/search/?api=1&query=Centro+Socio+Culturale,+Zanè" target="_blank">
+            Centro Socio Culturale, Zanè
+          </a>
+        </strong>
+        (aka the old town hall).
+      </p>
+    </div>
+
+    <!-- MAP -->
+    <div id="map"></div>
+  </div>
 
   <script>
     const map = L.map('map').setView([45.7073, 11.4323], 17);
