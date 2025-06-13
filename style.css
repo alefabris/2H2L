@@ -17,7 +17,7 @@ body {
   overflow-x: hidden;
 }
 
-body, p, span, li, div, a, section, article {
+body {
   font-family: 'Inter', sans-serif;
   color: #ffffff;
 }
