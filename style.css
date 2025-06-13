@@ -10,18 +10,13 @@ html, body {
   padding: 0;
   height: 100%;
   background-color: #0e0e0e;
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
 }
 
 body {
   min-height: 100vh;
   overflow-x: hidden;
-  font-family: 'Inter', sans-serif;
-  color: #ffffff;
-}
-
-body, p, li {
-  font-family: 'Inter', sans-serif;
-  color: #ffffff;
 }
 
 /* TYPOGRAPHY */
@@ -51,6 +46,7 @@ p {
 small {
   font-size: 0.75em;
   color: #999;
+  font-family: 'Orbitron', sans-serif;
 }
 
 /* LINKS */
@@ -181,21 +177,6 @@ nav a {
   border-radius: 10px;
   box-shadow: 0 0 15px #bb86fc22;
   text-align: left;
-  position: relative;
-}
-
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.game-title {
-  font-family: 'Orbitron', sans-serif;
-  color: #bb86fc;
-  font-size: 1.8rem;
-  margin: 0;
 }
 
 .game-meta {
@@ -205,11 +186,16 @@ nav a {
   margin-bottom: 5px;
 }
 
+.game h2 {
+  margin-bottom: 10px;
+}
+
 .owner {
   display: block;
-  margin-top: 15px;
+  margin-top: 20px;
   font-size: 0.75rem;
   color: #999;
+  font-family: 'Orbitron', sans-serif;
   text-align: right;
 }
 
@@ -245,74 +231,10 @@ nav a {
 .expansion-warning {
   margin-top: 12px;
   font-size: 0.95rem;
-  color: #c792ea; /* viola chiaro ma leggibile */
-  font-style: normal;
+  color: #a96cdf;
   font-family: 'Inter', sans-serif;
-}
-
-/* ACTIVITIES */
-.activity-wrapper {
-  text-align: center;
-  margin: 30px auto;
-  max-width: 800px;
-  padding: 0 20px;
-}
-
-/* JOIN PAGE */
-.join-wrapper {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 0 20px;
-  text-align: left;
-}
-
-.join-wrapper h1 {
-  text-align: center;
-}
-
-.join-wrapper ol {
-  margin-left: 1.5rem;
-  padding-left: 1rem;
-  line-height: 1.6;
-}
-
-/* MAP & IFRAME */
-#map,
-iframe {
-  width: 95%;
-  max-width: 800px;
-  height: 400px;
-  margin: 20px auto;
-  display: block;
-  border: 1px solid #333;
-  border-radius: 8px;
-}
-
-/* RESPONSIVE */
-@media (max-width: 600px) {
-  p {
-    margin: 15px;
-    font-size: 1.1rem;
-  }
-
-  .game {
-    margin: 15px 10px;
-    padding: 15px;
-  }
-
-  nav ul {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  nav li {
-    margin: 10px 0;
-  }
-
-  #map,
-  iframe {
-    height: 300px;
-  }
+  text-shadow: 0 0 4px #fff;
+  font-style: normal;
 }
 
 /* FILTER CONTROLS */
@@ -335,4 +257,54 @@ iframe {
   border: 1px solid #444;
   border-radius: 4px;
   padding: 5px 10px;
+}
+
+.clear-filters {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clear-filters:hover {
+  background: #444;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  p {
+    margin: 15px;
+    font-size: 1.1rem;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .game {
+    margin: 15px 10px;
+    padding: 15px;
+  }
+
+  nav ul {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  nav li {
+    margin: 10px 0;
+  }
+
+  #map,
+  iframe {
+    height: 300px;
+  }
 }
