@@ -198,3 +198,10 @@ a:hover {
   color: #ffffff;
   text-decoration: underline;
 }
+
+.activity-wrapper {
+  text-align: center;
+  margin: 30px auto;
+  max-width: 800px;
+  padding: 0 20px;
+}
