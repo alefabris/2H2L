@@ -38,9 +38,29 @@
       </a>
     </div>
 
-    <p>
-      If the link doesn't work, you can add us manually using our Session ID: <code>0543ab...xyz</code>
-    </p>
+    <div class="session-id-box">
+      <label for="sessionId">If the link doesn't work, add us manually:</label>
+      <div class="session-id-container">
+        <input type="text" id="sessionId" value="0543ab...xyz" readonly />
+        <button id="copySessionId" aria-label="Copy Session ID">Copy</button>
+      </div>
+    </div>
+
   </div>
+
+  <script>
+  const copyButton = document.getElementById('copySessionId');
+  copyButton.addEventListener('click', () => {
+    const input = document.getElementById('sessionId');
+    input.select();
+    input.setSelectionRange(0, 99999); // For mobile
+    document.execCommand('copy');
+
+    copyButton.textContent = 'Copied!';
+    setTimeout(() => (copyButton.textContent = 'Copy'), 1500);
+  });
+</script>
+
+  
 </body>
 </html>
