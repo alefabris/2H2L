@@ -53,6 +53,7 @@ small {
   color: #999;
 }
 
+/* LINKS */
 a {
   color: #bb86fc;
   text-decoration: none;
@@ -113,19 +114,6 @@ nav a {
 
 /* BUTTONS */
 .join-button {
-  background: #bb86fc;
-  color: #111;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: bold;
-  font-family: 'Orbitron', sans-serif;
-  box-shadow: 0 0 12px #bb86fc88;
-  transition: all 0.3s ease-in-out;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.join-button {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -140,6 +128,7 @@ nav a {
   letter-spacing: 0.5px;
   text-align: center;
   text-decoration: none;
+  font-weight: bold;
 }
 
 .join-button:hover {
@@ -151,7 +140,6 @@ nav a {
 
 .join-button .join-main {
   font-size: 1.2rem;
-  font-weight: bold;
 }
 
 .join-button .join-sub {
@@ -161,29 +149,53 @@ nav a {
   margin-top: 2px;
 }
 
-
 .centered-button {
   display: flex;
   justify-content: center;
   margin: 30px 0;
 }
 
-/* GAME BOXES */
+/* GAMES */
 .game {
   background: #1b1b1f;
   margin: 0 20px 40px;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 0 15px #bb86fc22;
+  position: relative;
 }
 
-.game h2 a {
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.game-title {
+  font-family: 'Orbitron', sans-serif;
   color: #bb86fc;
-  text-decoration: none;
+  font-size: 1.8rem;
+  margin: 0;
 }
 
-.game h2 a:hover {
-  text-decoration: underline;
+.game-meta {
+  text-align: right;
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-top: 2px;
+}
+
+.owner {
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.game p {
+  margin: 10px 20px;
 }
 
 .expansion {
@@ -205,20 +217,7 @@ nav a {
   font-size: 0.95em;
 }
 
-.game {
-  margin-bottom: 40px;
-}
-
-.game p {
-  margin: 10px 20px;
-}
-
-.expansion {
-  margin-left: 20px;
-  margin-top: 10px;
-}
-
-/* ACTIVITY PAGE */
+/* ACTIVITIES */
 .activity-wrapper {
   text-align: center;
   margin: 30px auto;
@@ -236,6 +235,24 @@ iframe {
   display: block;
   border: 1px solid #333;
   border-radius: 8px;
+}
+
+/* JOIN PAGE */
+.join-wrapper {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+  text-align: left;
+}
+
+.join-wrapper h1 {
+  text-align: center;
+}
+
+.join-wrapper ol {
+  margin-left: 1.5rem;
+  padding-left: 1rem;
+  line-height: 1.6;
 }
 
 /* RESPONSIVE */
@@ -263,22 +280,4 @@ iframe {
   iframe {
     height: 300px;
   }
-}
-
-/* JOIN PAGE */
-.join-wrapper {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 0 20px;
-  text-align: left;
-}
-
-.join-wrapper h1 {
-  text-align: center;
-}
-
-.join-wrapper ol {
-  margin-left: 1.5rem;
-  padding-left: 1rem;
-  line-height: 1.6;
 }
