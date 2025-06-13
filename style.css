@@ -354,3 +354,25 @@ iframe {
     width: 100%;
   }
 }
+
+/* EVENT HIGHLIGHT */
+.event-highlight {
+  background: #1b1b1f;
+  border-left: 4px solid #bb86fc;
+  padding: 20px;
+  margin: 40px 0 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #bb86fc33;
+}
+
+.event-highlight h2 {
+  margin-top: 0;
+  font-size: 1.8rem;
+  color: #bb86fc;
+  text-shadow: 0 0 4px #bb86fc66;
+}
+
+.event-highlight p {
+  margin: 10px 0;
+  color: #ddd;
+}
