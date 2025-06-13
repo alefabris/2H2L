@@ -205,6 +205,19 @@ nav a {
   font-size: 0.95em;
 }
 
+.game {
+  margin-bottom: 40px;
+}
+
+.game p {
+  margin: 10px 20px;
+}
+
+.expansion {
+  margin-left: 20px;
+  margin-top: 10px;
+}
+
 /* ACTIVITY PAGE */
 .activity-wrapper {
   text-align: center;
