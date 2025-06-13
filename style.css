@@ -29,7 +29,7 @@ h1, h2 {
   font-family: 'Orbitron', sans-serif;
   color: #bb86fc;
   margin: 20px;
-  font-size: 1.8rem;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
   text-shadow: 0 0 6px #bb86fc66;
 }
 
@@ -101,7 +101,7 @@ nav a {
 }
 
 .home-hero h1 {
-  font-size: 2.4rem;
+  font-size: clamp(2rem, 5vw, 3rem);
   margin-bottom: 15px;
 }
 
@@ -196,9 +196,9 @@ iframe {
 
 /* RESPONSIVE */
 @media (max-width: 600px) {
-  h1, h2, p {
+  p {
     margin: 15px;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
   }
 
   .game {
@@ -221,14 +221,13 @@ iframe {
   }
 }
 
+/* JOIN PAGE */
 .join-wrapper {
   max-width: 800px;
   margin: 40px auto;
   padding: 0 20px;
   text-align: left;
 }
-
-/* JOIN PAGE */
 
 .join-wrapper h1 {
   text-align: center;
