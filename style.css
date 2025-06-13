@@ -344,3 +344,58 @@ iframe {
   font-size: 0.95rem;
   cursor: pointer;
 }
+
+.session-id-box {
+  margin: 40px 20px 80px;
+  text-align: left;
+}
+
+.session-id-box label {
+  display: block;
+  margin-bottom: 8px;
+  color: #ccc;
+}
+
+.session-id-container {
+  display: flex;
+  gap: 10px;
+  max-width: 100%;
+}
+
+#sessionId {
+  flex: 1;
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.95rem;
+}
+
+#copySessionId {
+  background: #bb86fc;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  color: #111;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 8px #bb86fc88;
+  transition: background 0.2s ease;
+}
+
+#copySessionId:hover {
+  background: #d0a8ff;
+  color: #fff;
+  box-shadow: 0 0 12px #d0a8ffcc;
+}
+
+/* Extra bottom spacing */
+body::after {
+  content: "";
+  display: block;
+  height: 60px;
+}
