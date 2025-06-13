@@ -212,12 +212,25 @@ nav a {
   margin-bottom: 5px;
 }
 
+.game-meta span {
+  color: #ccc;
+}
+
+.game-meta span::before {
+  content: '';
+}
+
+.game-meta span .emoji {
+  color: #bb86fc;
+}
+
 .owner {
   display: block;
   margin-top: 15px;
   font-size: 0.75rem;
   color: #999;
   text-align: right;
+  text-shadow: 0 0 6px #bb86fc66;
   font-family: 'Orbitron', sans-serif;
 }
 
