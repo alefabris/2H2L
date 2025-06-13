@@ -153,7 +153,7 @@
             if (!existingWarn) {
               const warn = document.createElement('div');
               warn.className = 'expansion-warning';
-              warn.textContent = `⚠️ Requires expansion to support ${selectedPlayers} players`;
+              warn.innerHTML = `<img src="assets/icons/warning-purple.svg" alt="Warning icon"> Requires expansion to support ${selectedPlayers} players`;
               game.appendChild(warn);
             }
           } else if (existingWarn) {
