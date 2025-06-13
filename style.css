@@ -207,10 +207,10 @@ nav a {
 
 .owner {
   display: block;
-  text-align: right;
-  font-size: 0.7rem;
+  margin-top: 15px;
+  font-size: 0.75rem;
   color: #999;
-  margin-top: 8px;
+  text-align: right;
 }
 
 .game p {
@@ -243,10 +243,11 @@ nav a {
 }
 
 .expansion-warning {
-  margin-top: 10px;
-  font-size: 0.85rem;
-  color: #ffc107;
-  font-style: italic;
+  margin-top: 12px;
+  font-size: 0.95rem;
+  color: #c792ea; /* viola chiaro ma leggibile */
+  font-style: normal;
+  font-family: 'Inter', sans-serif;
 }
 
 /* ACTIVITIES */
