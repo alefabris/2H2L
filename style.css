@@ -205,3 +205,14 @@ a:hover {
   max-width: 800px;
   padding: 0 20px;
 }
+
+h1 a, h2 a {
+  color: #bb86fc;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+h1 a:hover, h2 a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
