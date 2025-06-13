@@ -39,6 +39,7 @@
           <option value="90">≤ 90'</option>
         </select>
       </label>
+      <button class="clear-filters" id="clearFilters">Reset Filters</button>
     </div>
 
     <!-- GAME: Blood Rage -->
@@ -119,6 +120,7 @@
   <script>
     const playerFilter = document.getElementById('playerFilter');
     const timeFilter = document.getElementById('timeFilter');
+    const clearFilters = document.getElementById('clearFilters');
     const games = document.querySelectorAll('.game');
 
     function getURLParams() {
@@ -154,19 +156,17 @@
         if (!isNaN(selectedPlayers)) {
           matchPlayers = selectedPlayers >= min && selectedPlayers <= max;
 
-          if (!matchPlayers && !isNaN(expansionMax)) {
-            matchPlayers = selectedPlayers <= expansionMax;
-
-            let warn = game.querySelector('.expansion-warning');
-            if (!warn) {
-              warn = document.createElement('div');
+          const existingWarning = game.querySelector('.expansion-warning');
+          if (!matchPlayers && !isNaN(expansionMax) && selectedPlayers <= expansionMax) {
+            matchPlayers = true;
+            if (!existingWarning) {
+              const warn = document.createElement('div');
               warn.className = 'expansion-warning';
               warn.textContent = `⚠️ Requires expansion to support ${selectedPlayers} players`;
               game.appendChild(warn);
             }
-          } else {
-            const warn = game.querySelector('.expansion-warning');
-            if (warn) warn.remove();
+          } else if (existingWarning) {
+            existingWarning.remove();
           }
         }
 
@@ -182,6 +182,11 @@
 
     playerFilter.addEventListener('change', filterGames);
     timeFilter.addEventListener('change', filterGames);
+    clearFilters.addEventListener('click', () => {
+      playerFilter.value = '';
+      timeFilter.value = '';
+      filterGames();
+    });
 
     window.addEventListener('DOMContentLoaded', () => {
       getURLParams();
