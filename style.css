@@ -363,7 +363,7 @@ iframe {
 }
 
 #sessionId {
-  flex: 1;
+  width: 66ch;
   background: #222;
   color: #fff;
   border: 1px solid #444;
@@ -372,6 +372,7 @@ iframe {
   font-family: monospace;
   font-size: 0.95rem;
 }
+
 
 #copySessionId {
   background: #bb86fc;
