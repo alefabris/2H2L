@@ -368,3 +368,9 @@ iframe {
   font-size: 0.95rem;
   cursor: pointer;
 }
+
+/* EMOJI COLOR & EFFECT */
+.emoji {
+  color: #bb86fc;
+  text-shadow: 0 0 4px #bb86fc66;
+}
