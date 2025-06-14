@@ -259,7 +259,8 @@
 
       games.forEach(game => {
         const metaText = game.querySelector('.game-meta')?.textContent || '';
-        const timeMatch = metaText.match(/⏱️:\s*(\d+)/);
+        const timeMatch = metaText.match(/(\d+)\s*–?\s*(\d+)?'/);
+        const minTime = timeMatch ? parseInt(timeMatch[1]) : null;
         const gameTime = timeMatch ? parseInt(timeMatch[1]) : null;
 
         const dataPlayers = game.dataset.players || '';
@@ -289,8 +290,8 @@
           if (existingWarn) existingWarn.remove();
         }
 
-        if (!isNaN(selectedTime) && gameTime !== null) {
-          matchTime = gameTime <= selectedTime;
+        if (!isNaN(selectedTime) && minTime !== null) {
+          matchTime = minTime <= selectedTime;
         }
 
         game.style.display = (matchPlayers && matchTime) ? '' : 'none';
