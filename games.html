@@ -309,7 +309,8 @@
           matchTime = minTime <= selectedTime;
         }
 
-        const gameOwner = game.querySelector('.owner')?.textContent?.replace(/[()]/g, '').trim();
+        const ownerEl = game.querySelector('.owner');
+        const gameOwner = ownerEl ? ownerEl.textContent.match(/\(([^)]+)\)/)?.[1] : null;
         const matchOwner = !selectedOwner || gameOwner === selectedOwner;
         game.style.display = (matchPlayers && matchTime && matchOwner) ? '' : 'none';
       });
