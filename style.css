@@ -218,6 +218,19 @@ nav a {
   filter: drop-shadow(0 0 4px #c792ea88);
 }
 
+/* COMING SOON / PLEDGE GAMES */
+.game.coming-soon {
+  border-left: 4px solid #ff9800;
+  background-color: #1f1a14;
+  box-shadow: 0 0 18px #ff980033;
+}
+
+.game.coming-soon p strong {
+  color: #ffb74d;
+  font-weight: 600;
+  font-size: 0.95em;
+}
+
 /* ICONS */
 .emoji-icon {
   width: 1.1em;
