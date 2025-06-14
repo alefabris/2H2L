@@ -31,6 +31,7 @@
           <option value="6">6+</option>
         </select>
       </label>
+      
       <label>
         Duration:
         <select id="timeFilter">
@@ -41,6 +42,16 @@
           <option value="120">≤ 120'</option>
         </select>
       </label>
+      
+      <label>
+        Owner:
+        <select id="ownerFilter">
+          <option value="">All</option>
+          <option value="gasca98">gasca98</option>
+          <option value="RushHD">RushHD</option>
+        </select>
+      </label>
+      
       <button id="clearFilters" class="clear-filters">Reset Filters</button>
     </div>
 
@@ -236,6 +247,7 @@
   <script>
     const playerFilter = document.getElementById('playerFilter');
     const timeFilter = document.getElementById('timeFilter');
+    const ownerFilter = document.getElementById('ownerFilter');
     const clearFilters = document.getElementById('clearFilters');
     const games = document.querySelectorAll('.game');
 
@@ -243,12 +255,14 @@
       const params = new URLSearchParams(window.location.search);
       if (params.has('players')) playerFilter.value = params.get('players');
       if (params.has('time')) timeFilter.value = params.get('time');
+      if (params.has('owner')) ownerFilter.value = params.get('owner');
     }
 
     function updateURLParams() {
       const params = new URLSearchParams();
       if (playerFilter.value) params.set('players', playerFilter.value);
       if (timeFilter.value) params.set('time', timeFilter.value);
+      if (ownerFilter.value) params.set('owner', ownerFilter.value);
       const newUrl = window.location.pathname + '?' + params.toString();
       history.replaceState({}, '', newUrl);
     }
@@ -256,6 +270,7 @@
     function filterGames() {
       const selectedPlayers = parseInt(playerFilter.value);
       const selectedTime = parseInt(timeFilter.value);
+      const selectedOwner = ownerFilter.value;
 
       games.forEach(game => {
         const metaText = game.querySelector('.game-meta')?.textContent || '';
@@ -294,7 +309,9 @@
           matchTime = minTime <= selectedTime;
         }
 
-        game.style.display = (matchPlayers && matchTime) ? '' : 'none';
+        const gameOwner = game.querySelector('.owner')?.textContent?.replace(/[()]/g, '').trim();
+        const matchOwner = !selectedOwner || gameOwner === selectedOwner;
+        game.style.display = (matchPlayers && matchTime && matchOwner) ? '' : 'none';
       });
 
       updateURLParams();
@@ -306,6 +323,7 @@
     clearFilters.addEventListener('click', () => {
       playerFilter.value = '';
       timeFilter.value = '';
+      ownerFilter.value = '';
       document.querySelectorAll('.expansion-warning').forEach(w => w.remove());
       filterGames();
     });
