@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vote & RSVP | Z4NE.zone</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="activities.html">Activities</a></li>
+      <li><a href="games.html">Games</a></li>
+      <li><a href="join.html" class="join-button">Join</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-wrapper">
+    <h1>Vote & RSVP</h1>
+    <p>Please enter your <strong>Session ID</strong>. Only current members can vote.</p>
+
+    <form id="voteForm">
+      <label>
+        Session ID:<br />
+        <input type="text" name="sessionId" id="sessionId" required />
+      </label>
+
+      <br /><br />
+
+      <label>
+        Choose your preferred game:<br />
+        <select name="selectedGame" id="gameDropdown" required>
+          <option value="">Loading games...</option>
+        </select>
+      </label>
+
+      <br /><br />
+
+      <button type="submit" class="join-button">Submit Vote</button>
+      <p id="formStatus" style="margin-top:1em;"></p>
+    </form>
+  </div>
+
+  <script>
+    let validMembers = [];
+
+    async function loadGames() {
+      const dropdown = document.getElementById('gameDropdown');
+      const indexRes = await fetch('games/index.json');
+      const gameSlugs = await indexRes.json();
+
+      const validGames = [];
+      for (const slug of gameSlugs) {
+        const res = await fetch(`games/${slug}.json`);
+        const game = await res.json();
+        if (!game.comingSoon) {
+          validGames.push({ title: game.title, value: slug });
+        }
+      }
+
+      dropdown.innerHTML = validGames.map(g =>
+        `<option value="${g.value}">${g.title}</option>`
+      ).join('');
+    }
+
+    async function loadMembers() {
+      const res = await fetch('data/members.json');
+      validMembers = await res.json();
+    }
+
+    document.getElementById('voteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const statusEl = document.getElementById('formStatus');
+      const sessionId = document.getElementById('sessionId').value.trim();
+
+      if (!validMembers.includes(sessionId)) {
+        statusEl.textContent = "❌ Invalid Session ID. Vote not accepted.";
+        statusEl.style.color = "#f44336";
+        return;
+      }
+
+      // Here you can send the vote somewhere, like to Formspree or a webhook
+      const game = document.getElementById('gameDropdown').value;
+
+      // Just display confirmation for now
+      statusEl.textContent = "✅ Your vote has been accepted. Thank you!";
+      statusEl.style.color = "#4caf50";
+
+      // Optional: send to server/backend via fetch if you add one
+      console.log("Accepted vote:", { sessionId, game });
+    });
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadGames();
+      await loadMembers();
+    });
+  </script>
+</body>
+</html>
