@@ -6,6 +6,9 @@
   <title>Submit your Game Vote | Z4NE.zone</title>
   <link rel="stylesheet" href="style.css" />
   <style>
+    .game {
+      margin-top: 30px;
+    }
     .game-radio:checked + label {
       outline: 3px solid #bb86fc;
       box-shadow: 0 0 12px #bb86fc88;
@@ -17,9 +20,6 @@
     }
     .game-radio {
       display: none;
-    }
-    #formStatus .expansion-warning {
-      margin-top: 20px;
     }
   </style>
 </head>
@@ -34,47 +34,29 @@
   </nav>
 
   <div class="page-wrapper">
-    <h1>Submit your Game Vote</h1>
-    <p>Please enter your <strong>Session ID</strong> and select your preferred game.</p>
+    <h1>Vote & RSVP</h1>
 
-    <!-- ✅ FormSubmit email form -->
-    <form action="https://formsubmit.io/send/ale.fabris1998@gmail.com"
-          method="POST"
-          id="voteForm">
+    <p>
+      Submit your vote securely through CryptPad. Only members with a valid Session ID will be considered.  
+    </p>
 
-      <!-- Hidden settings -->
-      <input type="hidden" name="_formsubmit_id" value="">
-      <input type="hidden" name="_redirect" value="thanks.html">
+    <div class="centered-button" style="margin-top: 30px;">
+      <a href="https://cryptpad.org/form/#/2/form/view/YOUR_FORM_ID_HERE/"
+         target="_blank" class="join-button">
+        <span class="join-main">Submit</span>
+        <span class="join-sub">your Game Vote via CryptPad</span>
+      </a>
+    </div>
 
-      <label>
-        Session ID:<br />
-        <input type="text" name="sessionId" id="sessionId" required />
-      </label>
+    <hr style="margin: 40px 0; border-color: #333;">
 
-      <br /><br />
-      <div id="gameListContainer">
-        <p><strong>Select a game:</strong></p>
-        <!-- Game cards inserted here -->
-      </div>
+    <h2>Available Games</h2>
+    <p>The list below updates automatically. Only these games are available for voting:</p>
 
-      <br />
-      <button type="submit" class="join-button">Submit Vote</button>
-      <div id="formStatus"></div>
-    </form>
+    <div id="gameListContainer"></div>
   </div>
 
   <script>
-    let validMembers = [];
-
-    async function loadMembers() {
-      try {
-        const res = await fetch('data/members.json');
-        validMembers = await res.json();
-      } catch (err) {
-        console.error("Failed to load member list:", err);
-      }
-    }
-
     async function loadGames() {
       const container = document.getElementById('gameListContainer');
       try {
@@ -99,23 +81,20 @@
           `).join('');
 
           const gameHTML = `
-            <input type="radio" name="selectedGame" value="${game.title}" id="game-${slug}" class="game-radio" required />
-            <label for="game-${slug}" class="game-choice">
-              <div class="game">
-                <div class="game-meta">
-                  <span>
-                    <img src="assets/icons/player-purple.svg" class="emoji-icon" />: ${game.players}
-                    ${game.playersWithExpansion ? `(+${game.playersWithExpansion - maxPlayers} with expansion)` : ''}
-                    |
-                    <img src="assets/icons/time-purple.svg" class="emoji-icon" />: ${game.time}'
-                  </span>
-                </div>
-                <h2>${game.title}</h2>
-                <p>${game.description}</p>
-                ${expansions}
-                <small class="owner">(${game.owner})</small>
+            <div class="game">
+              <div class="game-meta">
+                <span>
+                  <img src="assets/icons/player-purple.svg" class="emoji-icon" />: ${game.players}
+                  ${game.playersWithExpansion ? `(+${game.playersWithExpansion - maxPlayers} with expansion)` : ''}
+                  |
+                  <img src="assets/icons/time-purple.svg" class="emoji-icon" />: ${game.time}'
+                </span>
               </div>
-            </label>
+              <h2>${game.title}</h2>
+              <p>${game.description}</p>
+              ${expansions}
+              <small class="owner">(${game.owner})</small>
+            </div>
           `;
 
           container.insertAdjacentHTML('beforeend', gameHTML);
@@ -123,49 +102,14 @@
       } catch (err) {
         container.innerHTML = `
           <div class="expansion-warning">
-            <img src="assets/icons/warning-purple.svg" class="emoji-icon" alt="Warning icon">
+            <img src="assets/icons/warning-purple.svg" class="emoji-icon" alt="Warning">
             Unable to load games. Please try again later.
           </div>`;
-        console.error("Error loading games:", err);
+        console.error(err);
       }
     }
 
-    document.getElementById('voteForm').addEventListener('submit', (e) => {
-      const sessionId = document.getElementById('sessionId').value.trim();
-      const selectedGame = document.querySelector('input[name="selectedGame"]:checked')?.value;
-      const statusEl = document.getElementById('formStatus');
-
-      if (!validMembers.includes(sessionId)) {
-        e.preventDefault();
-        statusEl.innerHTML = `
-          <div class="expansion-warning">
-            <img src="assets/icons/error-purple.svg" class="emoji-icon" alt="Error">
-            Invalid Session ID. You must be a registered member to vote.
-          </div>`;
-        return;
-      }
-
-      if (!selectedGame) {
-        e.preventDefault();
-        statusEl.innerHTML = `
-          <div class="expansion-warning">
-            <img src="assets/icons/error-purple.svg" class="emoji-icon" alt="Error">
-            Please select a game.
-          </div>`;
-        return;
-      }
-
-      statusEl.innerHTML = `
-        <div class="expansion-warning">
-          <img src="assets/icons/ok-purple.svg" class="emoji-icon" alt="Success">
-          Valid Session ID. Submitting vote...
-        </div>`;
-    });
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      await loadMembers();
-      await loadGames();
-    });
+    window.addEventListener('DOMContentLoaded', loadGames);
   </script>
 </body>
 </html>
