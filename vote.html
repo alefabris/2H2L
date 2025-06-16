@@ -6,7 +6,6 @@
   <title>Submit your Game Vote | Z4NE.zone</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Highlight selected game card */
     .game-radio:checked + label {
       outline: 3px solid #bb86fc;
       box-shadow: 0 0 12px #bb86fc88;
@@ -35,7 +34,14 @@
     <h1>Vote & RSVP</h1>
     <p>Please enter your <strong>Session ID</strong> and select your preferred game.</p>
 
-    <form id="voteForm">
+    <!-- ✅ FormSubmit: sends vote to your email -->
+    <form action="https://formsubmit.io/send/your@email.com"
+          method="POST"
+          id="voteForm">
+
+      <input type="hidden" name="_formsubmit_id" value="">
+      <input type="hidden" name="_redirect" value="thanks.html">
+
       <label>
         Session ID:<br />
         <input type="text" name="sessionId" id="sessionId" required />
@@ -84,7 +90,7 @@
         `).join('');
 
         const gameHTML = `
-          <input type="radio" name="selectedGame" value="${slug}" id="game-${slug}" class="game-radio" required />
+          <input type="radio" name="selectedGame" value="${game.title}" id="game-${slug}" class="game-radio" required />
           <label for="game-${slug}" class="game-choice">
             <div class="game">
               <div class="game-meta">
@@ -108,29 +114,19 @@
     }
 
     document.getElementById('voteForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const statusEl = document.getElementById('formStatus');
       const sessionId = document.getElementById('sessionId').value.trim();
       const selectedGame = document.querySelector('input[name="selectedGame"]:checked')?.value;
+      const statusEl = document.getElementById('formStatus');
 
       if (!validMembers.includes(sessionId)) {
-        statusEl.textContent = "❌ Invalid Session ID. Vote not accepted.";
+        e.preventDefault(); // Cancel submission
+        statusEl.textContent = "❌ Invalid Session ID. You must be a registered member to vote.";
         statusEl.style.color = "#f44336";
         return;
       }
 
-      if (!selectedGame) {
-        statusEl.textContent = "❌ Please select a game.";
-        statusEl.style.color = "#f44336";
-        return;
-      }
-
-      // ✅ Simulate vote being accepted
-      statusEl.textContent = "✅ Your vote has been accepted. Thank you!";
+      statusEl.textContent = "✅ Valid Session ID. Submitting vote...";
       statusEl.style.color = "#4caf50";
-
-      // TODO: Save or send vote (currently just logs)
-      console.log("Vote accepted:", { sessionId, selectedGame });
     });
 
     window.addEventListener('DOMContentLoaded', async () => {
