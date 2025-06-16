@@ -18,6 +18,9 @@
     .game-radio {
       display: none;
     }
+    #formStatus .expansion-warning {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -34,12 +37,12 @@
     <h1>Submit your Game Vote</h1>
     <p>Please enter your <strong>Session ID</strong> and select your preferred game.</p>
 
-    <!-- ✅ Email-based form via FormSubmit -->
-    <form action="https://formsubmit.io/send/boardgames@420blaze.it"
+    <!-- ✅ FormSubmit email form -->
+    <form action="https://formsubmit.io/send/ale.fabris1998@gmail.com"
           method="POST"
           id="voteForm">
 
-      <!-- Hidden settings for FormSubmit -->
+      <!-- Hidden settings -->
       <input type="hidden" name="_formsubmit_id" value="">
       <input type="hidden" name="_redirect" value="thanks.html">
 
@@ -51,12 +54,12 @@
       <br /><br />
       <div id="gameListContainer">
         <p><strong>Select a game:</strong></p>
-        <!-- Game cards go here -->
+        <!-- Game cards inserted here -->
       </div>
 
       <br />
       <button type="submit" class="join-button">Submit Vote</button>
-      <p id="formStatus" style="margin-top:1em;"></p>
+      <div id="formStatus"></div>
     </form>
   </div>
 
@@ -68,7 +71,7 @@
         const res = await fetch('data/members.json');
         validMembers = await res.json();
       } catch (err) {
-        console.error("Could not load member list:", err);
+        console.error("Failed to load member list:", err);
       }
     }
 
@@ -118,8 +121,12 @@
           container.insertAdjacentHTML('beforeend', gameHTML);
         }
       } catch (err) {
-        container.innerHTML = '<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load games. Please try again later.</p>';
-        console.error("Game load error:", err);
+        container.innerHTML = `
+          <div class="expansion-warning">
+            <img src="assets/icons/warning-purple.svg" class="emoji-icon" alt="Warning icon">
+            Unable to load games. Please try again later.
+          </div>`;
+        console.error("Error loading games:", err);
       }
     }
 
@@ -130,20 +137,29 @@
 
       if (!validMembers.includes(sessionId)) {
         e.preventDefault();
-        statusEl.innerHTML = '<img src="assets/icons/error-purple.svg" class="emoji-icon"> Invalid Session ID. You must be a registered member to vote.';
-        statusEl.style.color = "#f44336";
+        statusEl.innerHTML = `
+          <div class="expansion-warning">
+            <img src="assets/icons/error-purple.svg" class="emoji-icon" alt="Error">
+            Invalid Session ID. You must be a registered member to vote.
+          </div>`;
         return;
       }
 
       if (!selectedGame) {
         e.preventDefault();
-        statusEl.innerHTML = '<img src="assets/icons/error-purple.svg" class="emoji-icon"> Please select a game.';
-        statusEl.style.color = "#f44336";
+        statusEl.innerHTML = `
+          <div class="expansion-warning">
+            <img src="assets/icons/error-purple.svg" class="emoji-icon" alt="Error">
+            Please select a game.
+          </div>`;
         return;
       }
 
-      statusEl.innerHTML = '<img src="assets/icons/ok-purple.svg" class="emoji-icon"> Valid Session ID. Submitting vote...';
-      statusEl.style.color = "#4caf50";
+      statusEl.innerHTML = `
+        <div class="expansion-warning">
+          <img src="assets/icons/ok-purple.svg" class="emoji-icon" alt="Success">
+          Valid Session ID. Submitting vote...
+        </div>`;
     });
 
     window.addEventListener('DOMContentLoaded', async () => {
