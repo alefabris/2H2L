@@ -19,15 +19,13 @@
   </nav>
 
   <div class="page-wrapper">
-    <!-- EVENT SECTION -->
-    <section class="event-highlight">
-      <h2>Next Game Night</h2>
-      <p><strong>Date:</strong> <em>Coming soon</em></p>
-      <p><strong>Game:</strong> <a href="https://boardgamegeek.com/boardgame/170216/blood-rage" target="_blank">Blood Rage</a> with all expansions</p>
-      <p><strong>Spots available:</strong> up to 5 players</p>
+    <!-- UPCOMING GAME NIGHT -->
+    <section class="event-highlight" id="upcoming-event">
+      <h2>Upcoming Game Night</h2>
+      <p>Loading event details...</p>
     </section>
 
-    <!-- MAIN DESCRIPTION -->
+    <!-- ACTIVITY DESCRIPTION -->
     <div class="activity-wrapper">
       <h1>Activities</h1>
       <p>
@@ -45,6 +43,38 @@
     <div id="map"></div>
   </div>
 
+  <!-- UPCOMING EVENT LOADER -->
+  <script>
+    async function loadUpcomingEvent() {
+      const box = document.getElementById('upcoming-event');
+
+      try {
+        const res = await fetch('events/upcoming.json');
+        const event = await res.json();
+
+        const formattedDate = new Date(event.date).toLocaleDateString();
+
+        box.innerHTML = `
+          <h2>Upcoming Game Night</h2>
+          <p><strong>Date:</strong> ${formattedDate}</p>
+          <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
+          <div class="centered-button">
+            <a href="${event.formUrl}" target="_blank" class="join-button">
+              <span class="join-main">Vote & RSVP</span>
+              <span class="join-sub">choose the game + join</span>
+            </a>
+          </div>
+        `;
+      } catch (err) {
+        box.innerHTML = `<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load upcoming event. Please try again later.</p>`;
+        console.error(err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadUpcomingEvent);
+  </script>
+
+  <!-- LEAFLET MAP INIT -->
   <script>
     const map = L.map('map').setView([45.7073, 11.4323], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
