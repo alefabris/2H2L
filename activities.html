@@ -19,9 +19,9 @@
   </nav>
 
   <div class="page-wrapper">
-    <!-- UPCOMING GAME NIGHT -->
+    <!-- UPCOMING GAME NIGHT (compact version) -->
     <section class="event-highlight" id="upcoming-event">
-      <h2>Upcoming Game Night</h2>
+      <h2>Next Game Night</h2>
       <p>Loading event details...</p>
     </section>
 
@@ -55,13 +55,13 @@
         const formattedDate = new Date(event.date).toLocaleDateString();
 
         box.innerHTML = `
-          <h2>Upcoming Game Night</h2>
+          <h2>Next Game Night</h2>
           <p><strong>Date:</strong> ${formattedDate}</p>
           <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
           <div class="centered-button">
-            <a href="${event.formUrl}" target="_blank" class="join-button">
-              <span class="join-main">Vote & RSVP</span>
-              <span class="join-sub">choose the game + join</span>
+            <a href="${event.formUrl}" class="join-button">
+              <span class="join-main">Submit</span>
+              <span class="join-sub">your Game Vote</span>
             </a>
           </div>
         `;
