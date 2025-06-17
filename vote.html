@@ -3,23 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Submit your Game Vote | Z4NE.zone</title>
+  <title>Vote for a Game | Z4NE.zone</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .game {
-      margin-top: 30px;
-    }
-    .game-radio:checked + label {
-      outline: 3px solid #bb86fc;
-      box-shadow: 0 0 12px #bb86fc88;
-    }
-    .game-choice {
+    .game-card {
+      border: 2px solid #444;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
       cursor: pointer;
-      margin-bottom: 20px;
-      display: block;
+      transition: 0.2s;
+    }
+    .game-card:hover {
+      border-color: #bb86fc;
     }
     .game-radio {
       display: none;
+    }
+    .game-radio:checked + label {
+      border-color: #bb86fc;
+      box-shadow: 0 0 10px #bb86fc88;
+      background-color: #2a2a2a;
     }
     .message {
       margin-top: 1em;
@@ -35,158 +39,114 @@
   </style>
 </head>
 <body>
-  <nav>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="activities.html">Activities</a></li>
-      <li><a href="games.html">Games</a></li>
-      <li><a href="join.html" class="join-button">Join</a></li>
-    </ul>
-  </nav>
-
   <div class="page-wrapper">
     <h1>Vote & RSVP</h1>
+    <p>Select a game and enter your Session ID to vote.</p>
 
-    <p>
-      Submit your vote using the form below. Only members with a valid Session ID will be considered.
-    </p>
-
-    <form id="voteForm" class="centered-button" style="margin-top: 30px;">
-      <div id="gameOptions"></div>
+    <form id="voteForm">
+      <div id="gameList"></div>
 
       <label for="sessionId">Session ID:</label><br>
-      <input type="text" id="sessionId" name="session_id" required /><br><br>
+      <input type="text" id="sessionId" name="session_id" required><br><br>
 
-      <button type="submit" class="join-button">
-        <span class="join-main">Submit</span>
-        <span class="join-sub">your Game Vote via Email</span>
-      </button>
-
+      <button type="submit">Submit Vote</button>
       <div id="formMessage"></div>
     </form>
-
-    <hr style="margin: 40px 0; border-color: #333;">
-
-    <h2>Available Games</h2>
-    <p>The list below updates automatically. Only these games are available for voting:</p>
-
-    <div id="gameListContainer"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <script>
-    emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // ✅ Replace this
+    emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Replace this
 
-    const gameMap = new Map();
+    let validSessions = [];
+
+    async function loadMembers() {
+      try {
+        const res = await fetch('data/members.json');
+        validSessions = await res.json();
+      } catch (e) {
+        console.error("Couldn't load members.json", e);
+      }
+    }
 
     async function loadGames() {
-      const gameOptions = document.getElementById('gameOptions');
-      const container = document.getElementById('gameListContainer');
-
+      const list = document.getElementById('gameList');
       try {
-        const indexRes = await fetch('games/index.json');
-        const gameSlugs = await indexRes.json();
+        const res = await fetch('games/index.json');
+        const slugs = await res.json();
 
-        for (const slug of gameSlugs) {
-          const res = await fetch(`games/${slug}.json`);
-          const game = await res.json();
+        for (const slug of slugs) {
+          const gRes = await fetch(`games/${slug}.json`);
+          const game = await gRes.json();
           if (game.comingSoon) continue;
 
-          const gameId = `game-${slug}`;
-          gameMap.set(game.title, true);
-
-          // Voting option
-          const radio = document.createElement('input');
-          radio.type = 'radio';
-          radio.id = gameId;
-          radio.name = 'game';
-          radio.value = game.title;
-          radio.className = 'game-radio';
-          radio.required = true;
-
-          const label = document.createElement('label');
-          label.htmlFor = gameId;
-          label.className = 'game-choice';
-          label.textContent = game.title;
-
-          gameOptions.appendChild(radio);
-          gameOptions.appendChild(label);
-
-          // Full details
-          const [minPlayers, maxPlayers] = game.players.split('-');
-
-          const expansions = (game.expansions || []).map(exp => `
-            <div class="expansion">
-              <a href="${exp.url}" target="_blank">
-                ${exp.title}
-                ${exp.note ? `<span class="expansion-note"><img src="assets/icons/player-purple.svg" class="emoji-icon">${exp.note}</span>` : ''}
-              </a>
-              <span>${exp.description}</span>
-            </div>
-          `).join('');
-
-          const gameHTML = `
-            <div class="game">
-              <div class="game-meta">
-                <span>
-                  <img src="assets/icons/player-purple.svg" class="emoji-icon" />: ${game.players}
-                  ${game.playersWithExpansion ? `(+${game.playersWithExpansion - maxPlayers} with expansion)` : ''}
-                  |
-                  <img src="assets/icons/time-purple.svg" class="emoji-icon" />: ${game.time}
-                </span>
-              </div>
-              <h2>${game.title}</h2>
+          const id = `game-${slug}`;
+          const radio = `<input type="radio" id="${id}" name="game" value="${game.title}" class="game-radio" required>`;
+          const label = `
+            <label for="${id}" class="game-card">
+              <h3>${game.title}</h3>
+              <p><strong>Players:</strong> ${game.players}</p>
+              <p><strong>Time:</strong> ${game.time}</p>
+              <p><strong>Owner:</strong> ${game.owner}</p>
               <p>${game.description}</p>
-              ${expansions}
-              <small class="owner">(${game.owner})</small>
-            </div>
+            </label>
           `;
-
-          container.insertAdjacentHTML('beforeend', gameHTML);
+          list.insertAdjacentHTML('beforeend', radio + label);
         }
       } catch (err) {
-        container.innerHTML = `
-          <div class="expansion-warning">
-            <img src="assets/icons/warning-purple.svg" class="emoji-icon" alt="Warning">
-            Unable to load games. Please try again later.
+        list.innerHTML = `
+          <div class="message error">
+            <span class="icon">❌</span> Failed to load games.
           </div>`;
         console.error(err);
       }
     }
 
-    document.getElementById('voteForm').addEventListener('submit', function (e) {
+    document.getElementById('voteForm').addEventListener('submit', async function (e) {
       e.preventDefault();
 
-      const selectedGame = document.querySelector('input[name="game"]:checked');
+      const selected = document.querySelector('input[name="game"]:checked');
       const sessionId = document.getElementById('sessionId').value.trim();
+      const msg = document.getElementById('formMessage');
 
-      if (!selectedGame || !sessionId) return;
+      if (!selected || !sessionId) return;
+
+      if (!validSessions.includes(sessionId)) {
+        msg.innerHTML = `
+          <div class="message error">
+            <span class="icon">❌</span>
+            Invalid Session ID.
+          </div>`;
+        return;
+      }
 
       const params = {
-        game: selectedGame.value,
+        game: selected.value,
         session_id: sessionId
       };
 
-      emailjs.send('YOUR_EMAILJS_SERVICE_ID', 'YOUR_EMAILJS_TEMPLATE_ID', params) // ✅ Replace these
-        .then(() => {
-          document.getElementById('formMessage').innerHTML = `
-            <div class="message success">
-              <span class="icon">✅</span>
-              Your vote has been submitted!
-            </div>`;
-          document.getElementById('voteForm').reset();
-        })
-        .catch((error) => {
-          document.getElementById('formMessage').innerHTML = `
-            <div class="message error">
-              <span class="icon">❌</span>
-              Failed to send vote. Try again shortly.
-            </div>`;
-          console.error('EmailJS error:', error);
-        });
+      try {
+        await emailjs.send('YOUR_EMAILJS_SERVICE_ID', 'YOUR_EMAILJS_TEMPLATE_ID', params); // Replace
+        msg.innerHTML = `
+          <div class="message success">
+            <span class="icon">✅</span>
+            Vote submitted successfully!
+          </div>`;
+        e.target.reset();
+      } catch (err) {
+        msg.innerHTML = `
+          <div class="message error">
+            <span class="icon">❌</span>
+            Failed to send. Try again.
+          </div>`;
+        console.error(err);
+      }
     });
 
-    window.addEventListener('DOMContentLoaded', loadGames);
+    window.addEventListener('DOMContentLoaded', () => {
+      loadMembers();
+      loadGames();
+    });
   </script>
 </body>
 </html>
