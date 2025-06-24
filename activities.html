@@ -43,7 +43,7 @@
     <div id="map"></div>
   </div>
 
-  <!-- EVENT & RESULTS LOADER -->
+  <!-- EVENT + POLL RESULTS SCRIPT -->
   <script>
     async function loadUpcomingEvent() {
       const box = document.getElementById('upcoming-event');
@@ -57,18 +57,15 @@
 
         // Load poll results
         const resultsRes = await fetch('results.json');
-        if (!resultsRes.ok) throw new Error('results.json not found');
         const results = await resultsRes.json();
 
-        // Format poll list
+        // Render emoji + vote list
         const pollList = results.votes.map((r, i) => {
-          const emoji = String.fromCodePoint(0x1F1E6 + i); // 🇦 = U+1F1E6
+          const emoji = String.fromCodePoint(0x1F1E6 + i); // 🇦 + i
           return `<li>${emoji} ${r.game}: ${r.votes} vote${r.votes !== 1 ? 's' : ''}</li>`;
         }).join('');
 
-        const updatedAt = results.generatedAt
-          ? `<p><em>Last updated: ${new Date(results.generatedAt).toLocaleTimeString()}</em></p>`
-          : '';
+        const updatedAt = new Date(results.generatedAt).toLocaleString();
 
         box.innerHTML = `
           <h2>Next Game Night</h2>
@@ -76,12 +73,12 @@
           <p><strong>Players:</strong> up to ${players} participants</p>
           <h3>Current Votes:</h3>
           <ul>${pollList}</ul>
-          ${updatedAt}
+          <p><em>Last updated: ${updatedAt}</em></p>
         `;
       } catch (err) {
         box.innerHTML = `
           <p><img src="assets/icons/warning-purple.svg" class="emoji-icon">
-          Unable to load event or poll results. Please try again later.</p>`;
+          Unable to load event or poll results.</p>`;
         console.error(err);
       }
     }
@@ -89,7 +86,7 @@
     window.addEventListener('DOMContentLoaded', loadUpcomingEvent);
   </script>
 
-  <!-- MAP SCRIPT -->
+  <!-- MAP INIT -->
   <script>
     const map = L.map('map').setView([45.7073, 11.4323], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
