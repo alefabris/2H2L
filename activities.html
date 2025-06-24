@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -43,40 +43,61 @@
     <div id="map"></div>
   </div>
 
-  <!-- UPCOMING EVENT LOADER -->
+  <!-- UPCOMING EVENT + POLL RESULTS SCRIPT -->
   <script>
     async function loadUpcomingEvent() {
       const box = document.getElementById('upcoming-event');
 
       try {
-        const [eventRes, resultsRes] = await Promise.all([
-          fetch('events/upcoming.json'),
-          fetch('results.json')
-        ]);
-
+        const eventRes = await fetch('events/upcoming.json');
         const event = await eventRes.json();
-        const results = await resultsRes.json();
 
         const formattedDate = new Date(event.date).toLocaleDateString();
         const players = event.playersLimit;
+        const formUrl = event.formUrl;
 
-        // Format poll results
-        const pollList = results.map((r, i) => {
-          const emoji = String.fromCodePoint(0x1F1E6 + i); // 🇦 + i
-          return `<li>${emoji} ${r.game}: ${r.votes} vote${r.votes !== 1 ? 's' : ''}</li>`;
-        }).join('');
+        let results = [];
+        try {
+          const resultsRes = await fetch('results.json');
+          if (!resultsRes.ok) throw new Error('results.json not found');
+          results = await resultsRes.json();
+        } catch (err) {
+          console.warn("results.json missing or invalid, skipping votes display.");
+        }
+
+        // Format poll results or fallback
+        let pollDisplay = '';
+        if (results.length > 0) {
+          pollDisplay = `
+            <h3>Current Votes:</h3>
+            <ul>
+              ${results.map((r, i) => {
+                const emoji = String.fromCodePoint(0x1F1E6 + i); // 🇦 + i
+                return `<li>${emoji} ${r.game}: ${r.votes} vote${r.votes !== 1 ? 's' : ''}</li>`;
+              }).join('')}
+            </ul>
+          `;
+        } else {
+          pollDisplay = `
+            <div class="centered-button">
+              <a href="${formUrl}" class="join-button">
+                <span class="join-main">Submit</span>
+                <span class="join-sub">your Game Vote</span>
+              </a>
+            </div>
+          `;
+        }
 
         box.innerHTML = `
           <h2>Next Game Night</h2>
           <p><strong>Date:</strong> ${formattedDate}</p>
           <p><strong>Players:</strong> up to ${players} participants</p>
-          <h3>Current Votes:</h3>
-          <ul>${pollList}</ul>
+          ${pollDisplay}
         `;
       } catch (err) {
         box.innerHTML = `
           <p><img src="assets/icons/warning-purple.svg" class="emoji-icon">
-          Unable to load upcoming event or poll. Please try again later.</p>`;
+          Unable to load upcoming event. Please try again later.</p>`;
         console.error(err);
       }
     }
