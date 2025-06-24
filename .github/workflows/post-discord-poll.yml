@@ -13,8 +13,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Read game list and send poll
-        id: send_poll
+      - name: Read games and send poll message
+        id: post
         run: |
           GAMES=$(jq -r '.[]' games/index.json)
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
@@ -27,20 +27,29 @@ jobs:
             i=$((i + 1))
           done <<< "$GAMES"
 
-          # Send poll message to Discord
+          # Send message to Discord
           RESPONSE=$(curl -s -X POST "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages" \
             -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\": \"${MSG}\"}")
+            -d "{\"content\": \"$MSG\"}")
 
           echo "$RESPONSE" > .poll_response.json
           MESSAGE_ID=$(jq -r '.id' .poll_response.json)
+
+          if [[ "$MESSAGE_ID" == "null" || -z "$MESSAGE_ID" ]]; then
+            echo "❌ Failed to post poll. Response:"
+            cat .poll_response.json
+            exit 1
+          fi
+
+          echo "$MESSAGE_ID" > .poll_id
           echo "MESSAGE_ID=$MESSAGE_ID" >> $GITHUB_ENV
 
-      - name: Add reactions to poll message
+      - name: Add reactions to poll
         run: |
           GAMES=$(jq -r '.[]' games/index.json)
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
+
           i=0
           while read -r _; do
             EMOJI_URLENCODED=$(printf "%s" "${EMOJIS[i]}" | jq -sRr @uri)
@@ -49,10 +58,7 @@ jobs:
             i=$((i + 1))
           done <<< "$GAMES"
 
-      - name: Save poll message ID to file
-        run: echo "${MESSAGE_ID}" > .poll_id
-
-      - name: Commit and push .poll_id
+      - name: Commit .poll_id file
         run: |
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
