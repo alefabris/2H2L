@@ -43,26 +43,32 @@
     <div id="map"></div>
   </div>
 
-  <!-- SCRIPT: Event Info + Poll Results -->
+  <!-- EVENT & RESULTS LOADER -->
   <script>
     async function loadUpcomingEvent() {
       const box = document.getElementById('upcoming-event');
 
       try {
+        // Load event info
         const eventRes = await fetch('events/upcoming.json');
         const event = await eventRes.json();
-
         const formattedDate = new Date(event.date).toLocaleDateString();
         const players = event.playersLimit;
 
+        // Load poll results
         const resultsRes = await fetch('results.json');
         if (!resultsRes.ok) throw new Error('results.json not found');
         const results = await resultsRes.json();
 
-        const pollList = results.map((r, i) => {
-          const emoji = String.fromCodePoint(0x1F1E6 + i); // 🇦 + i
+        // Format poll list
+        const pollList = results.votes.map((r, i) => {
+          const emoji = String.fromCodePoint(0x1F1E6 + i); // 🇦 = U+1F1E6
           return `<li>${emoji} ${r.game}: ${r.votes} vote${r.votes !== 1 ? 's' : ''}</li>`;
         }).join('');
+
+        const updatedAt = results.generatedAt
+          ? `<p><em>Last updated: ${new Date(results.generatedAt).toLocaleTimeString()}</em></p>`
+          : '';
 
         box.innerHTML = `
           <h2>Next Game Night</h2>
@@ -70,6 +76,7 @@
           <p><strong>Players:</strong> up to ${players} participants</p>
           <h3>Current Votes:</h3>
           <ul>${pollList}</ul>
+          ${updatedAt}
         `;
       } catch (err) {
         box.innerHTML = `
@@ -82,7 +89,7 @@
     window.addEventListener('DOMContentLoaded', loadUpcomingEvent);
   </script>
 
-  <!-- LEAFLET MAP INIT -->
+  <!-- MAP SCRIPT -->
   <script>
     const map = L.map('map').setView([45.7073, 11.4323], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
