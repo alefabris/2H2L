@@ -3,7 +3,7 @@ name: Post Weekly Board Game Poll
 on:
   schedule:
     - cron: "0 10 * * 4"  # Every Thursday at 10:00 UTC
-  workflow_dispatch:  # Allow manual run
+  workflow_dispatch:  # Allow manual run from GitHub UI
 
 jobs:
   post_poll:
@@ -18,13 +18,14 @@ jobs:
           echo "Reading game list from /games/index.json..."
           GAMES=$(jq -r '.[]' games/index.json)
 
-          EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴)
+          EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
+
           MSG="🎲 **Vote for this week's board game!**\nReact with the emoji to vote:\n"
 
           i=0
           while read -r GAME; do
             if [ $i -ge ${#EMOJIS[@]} ]; then
-              echo "Too many games (max 15 supported). Skipping: $GAME"
+              echo "Too many games (max ${#EMOJIS[@]} supported). Skipping: $GAME"
               continue
             fi
             MSG+="${EMOJIS[i]} ${GAME}\n"
@@ -33,10 +34,19 @@ jobs:
 
           echo "Sending message to Discord..."
 
-          curl -X POST "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages" \
+          RESPONSE=$(curl -s -X POST "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages" \
             -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\": \"${MSG}\"}"
+            -d "{\"content\": \"${MSG}\"}")
 
-      - name: Done
-        run: echo "Poll posted successfully."
+          echo "$RESPONSE" > .poll_response.json
+          MESSAGE_ID=$(jq -r .id .poll_response.json)
+          echo "$MESSAGE_ID" > .poll_id
+
+      - name: Commit poll_id file
+        run: |
+          git config --global user.name "poll-bot"
+          git config --global user.email "bot@example.com"
+          git add .poll_id
+          git commit -m "Save poll message ID"
+          git push
