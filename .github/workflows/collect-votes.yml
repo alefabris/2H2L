@@ -10,24 +10,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Read poll message ID
         run: echo "MESSAGE_ID=$(cat .poll_id)" >> "$GITHUB_ENV"
 
-      - name: Get poll message from Discord
+      - name: Get poll message from Discord (with debug output)
         run: |
-          RESPONSE=$(curl -s -X GET "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages/${MESSAGE_ID}" \
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages/${MESSAGE_ID}" \
             -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}")
-          echo "$RESPONSE" > .poll_message.json
 
-      - name: Generate results.json + history
+          echo "$RESPONSE" | tee full_response.txt
+
+          HTTP_STATUS=$(echo "$RESPONSE" | grep HTTP_STATUS | cut -d: -f2)
+          JSON_CONTENT=$(echo "$RESPONSE" | sed '/HTTP_STATUS/d')
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "❌ Failed to fetch poll message. Status: $HTTP_STATUS"
+            echo "$JSON_CONTENT"
+            exit 1
+          fi
+
+          echo "$JSON_CONTENT" > .poll_message.json
+
+      - name: Generate results.json and history
         run: |
+          mkdir -p results
+
           GAMES=$(jq -r '.[]' games/index.json)
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
 
-          jq -r '.reactions[] | "\(.emoji.name) \(.count)"' .poll_message.json > .reaction_counts.txt
+          # Safe parse even if no reactions
+          jq -r '.reactions[]? | "\(.emoji.name) \(.count)"' .poll_message.json > .reaction_counts.txt
 
           NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           TODAY=$(date -u +'%Y-%m-%d')
@@ -48,13 +63,12 @@ jobs:
           echo "  \"generatedAt\": \"${NOW}\"" >> results.json
           echo "}" >> results.json
 
-          mkdir -p results
           cp results.json "results/${TODAY}.json"
 
-      - name: Commit updated results
+      - name: Commit results to repo
         run: |
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
           git add results.json results/*.json
-          git commit -m "Update poll results and archive history"
+          git commit -m "Update poll results and archive"
           git push
