@@ -59,7 +59,7 @@ jobs:
             echo "Adding $EMOJI..."
             curl -s -X PUT "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages/${MESSAGE_ID}/reactions/${ENCODED}/@me" \
               -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" > /dev/null
-            sleep 0.5
+            sleep 0.1
             i=$((i + 1))
           done <<< "$GAMES"
 
