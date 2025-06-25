@@ -214,6 +214,14 @@ nav a {
 .game.coming-soon p strong {
   color: #ffb74d;
 }
+.event-highlight {
+  background: #1b1b1f;
+  border-left: 4px solid #bb86fc;
+  padding: 20px;
+  margin: 40px 0;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #bb86fc33;
+}
 
 /*  POLL RESULTS  */
 .poll-results {
