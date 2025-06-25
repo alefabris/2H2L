@@ -45,44 +45,43 @@
 
   <!-- UPCOMING EVENT AND POLL LOADER -->
   <script>
-    async function loadEventAndPoll() {
-      const box = document.getElementById('upcoming-event');
-
-      try {
-        const [eventRes, pollRes] = await Promise.all([
-          fetch('events/upcoming.json'),
-          fetch('results.json')
-        ]);
-
-        if (!eventRes.ok || !pollRes.ok) throw new Error("One or more files failed to load.");
-
-        const event = await eventRes.json();
-        const poll = await pollRes.json();
-
-        const formattedDate = new Date(event.date).toLocaleDateString();
-        const voteLines = poll.votes
-          .sort((a, b) => b.votes - a.votes)
-          .filter(v => v.votes > 0)
-          .map(v => `${v.votes} vote${v.votes !== 1 ? 's' : ''} – ${v.game}`)
-          .join('<br>');
-
-        box.innerHTML = `
-          <h2>Next Game Night</h2>
-          <p><strong>Date:</strong> ${formattedDate}</p>
-          <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
-          <p><strong>Poll Results:</strong></p>
-          <p>${voteLines}</p>
-        `;
-      } catch (err) {
-        box.innerHTML = `
-          <p><img src="assets/icons/warning-purple.svg" class="emoji-icon">
-          Unable to load event or poll results. Please try again later.</p>`;
-        console.error(err);
-      }
+  async function loadEventAndPoll() {
+    const box = document.getElementById('upcoming-event');
+  
+    try {
+      const [eventRes, pollRes] = await Promise.all([
+        fetch('events/upcoming.json'),
+        fetch('results.json')
+      ]);
+  
+      if (!eventRes.ok || !pollRes.ok) throw new Error("File fetch failed");
+  
+      const event = await eventRes.json();
+      const poll = await pollRes.json();
+  
+      const formattedDate = new Date(event.date).toLocaleDateString();
+      const voteLines = poll.votes
+        .filter(v => v.votes > 0)
+        .sort((a, b) => b.votes - a.votes)
+        .map(v => `${v.votes} vote${v.votes !== 1 ? 's' : ''} – <a href="${v.url}" target="_blank">${v.title}</a>`)
+        .join('<br>');
+  
+      box.innerHTML = `
+        <h2>Next Game Night</h2>
+        <p><strong>Date:</strong> ${formattedDate}</p>
+        <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
+        <p><strong>Poll Results:</strong></p>
+        <p>${voteLines}</p>
+      `;
+    } catch (err) {
+      box.innerHTML = `<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load event or poll results.</p>`;
+      console.error(err);
     }
-
-    window.addEventListener('DOMContentLoaded', loadEventAndPoll);
+  }
+  
+  window.addEventListener('DOMContentLoaded', loadEventAndPoll);
   </script>
+
 
   <!-- LEAFLET MAP INIT -->
   <script>
