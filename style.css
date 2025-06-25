@@ -397,3 +397,48 @@ iframe {
   margin: 10px 0;
   color: #ddd;
 }
+
+/* POLL */
+.poll-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 1em;
+}
+
+.poll-result {
+  background: #1a1c2c;
+  border: 1px solid #3c3f5c;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.poll-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+  margin-bottom: 4px;
+  color: #cfd7ff;
+}
+
+.poll-label a {
+  color: #88ccff;
+  text-decoration: none;
+}
+
+.poll-label a:hover {
+  text-decoration: underline;
+}
+
+.poll-bar-container {
+  background: #2a2d44;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 10px;
+}
+
+.poll-bar {
+  background: linear-gradient(to right, #48c6ef, #6f86d6);
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
