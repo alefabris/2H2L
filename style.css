@@ -42,6 +42,12 @@ small {
   color: #999;
 }
 
+.section-title {
+  text-align: center;
+  margin-top: 60px;
+  margin-bottom: 20px;
+}
+
 /* LINKS */
 a {
   color: #bb86fc;
