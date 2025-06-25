@@ -62,6 +62,7 @@
         const formattedDate = new Date(event.date).toLocaleDateString();
         const voteLines = poll.votes
           .sort((a, b) => b.votes - a.votes)
+          .filter(v => v.votes > 0)
           .map(v => `${v.votes} vote${v.votes !== 1 ? 's' : ''} – ${v.game}`)
           .join('<br>');
 
