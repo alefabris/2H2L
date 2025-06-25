@@ -20,9 +20,12 @@ jobs:
         id: extract
         run: |
           mkdir -p .tmp
+
+          # Get all unique owners from game files
           jq -r '.[] | select(.comingSoon != true) | .owner' games/*.json | sort -u > .tmp/owners.txt
 
-          echo "🧩 **Game Owners – Will you be there tomorrow?**\n\nReact with:\n✅ Yes\n❌ No\n🤔 Maybe\n\n" > owner_poll_message.txt
+          # Build message
+          echo "🧩 **Game Owners – Will you be there the next week?**\n\nReact with:\n✅ Yes\n❌ No\n\n" > owner_poll_message.txt
           while read -r OWNER; do
             echo "✅ ${OWNER}" >> owner_poll_message.txt
           done < .tmp/owners.txt
@@ -41,18 +44,41 @@ jobs:
           echo "$MESSAGE_ID" > .owner_poll_id
           echo "OWNER_POLL_ID=$MESSAGE_ID" >> $GITHUB_ENV
 
-      - name: Add reactions
+      - name: Add ✅ and ❌ reactions
         run: |
-          for EMOJI in "✅" "❌" "🤔"; do
+          for EMOJI in "✅" "❌"; do
             ENCODED=$(printf "%s" "$EMOJI" | jq -sRr @uri)
             curl -s -X PUT "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages/${OWNER_POLL_ID}/reactions/${ENCODED}/@me" \
               -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" > /dev/null
           done
 
-      - name: Commit poll ID
+      - name: Fetch ✅ reactions and map present owners
+        run: |
+          # Fetch users who reacted ✅
+          ENCODED=$(printf "✅" | jq -sRr @uri)
+          RESPONSE=$(curl -s "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages/${OWNER_POLL_ID}/reactions/${ENCODED}?limit=100" \
+            -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}")
+
+          echo "$RESPONSE" > .tmp/reacted_yes.json
+
+          # Extract usernames
+          jq -r '.[].username' .tmp/reacted_yes.json | sort -u > .tmp/reacted_usernames.txt
+
+          # Load map and match
+          touch .present_owners
+          while read -r DISCORD_USERNAME; do
+            OWNER=$(jq -r --arg name "$DISCORD_USERNAME" '.[$name] // empty' .owners_map.json)
+            if [ -n "$OWNER" ]; then
+              echo "$OWNER" >> .present_owners
+            fi
+          done < .tmp/reacted_usernames.txt
+
+          sort -u .present_owners -o .present_owners
+
+      - name: Commit present owners
         run: |
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
-          git add .owner_poll_id
-          git commit -m "Save owner availability poll ID"
+          git add .owner_poll_id .present_owners
+          git commit -m "Update present game owners"
           git push
