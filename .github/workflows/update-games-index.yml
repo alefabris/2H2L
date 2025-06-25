@@ -1,14 +1,14 @@
-name: Build Game Index
+name: Update games/index.json
 
 on:
-  push:
-    paths:
-      - 'games/**'
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes
   workflow_dispatch:
-
+  
 jobs:
-  build:
+  generate-index:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -30,10 +30,9 @@ jobs:
             fs.writeFileSync(path.join(gamesDir, 'index.json'), JSON.stringify(gameFiles, null, 2));
           "
 
-      - name: Commit and push index.json
+      - name: Commit and push changes
         run: |
-          git config user.name 'github-actions'
-          git config user.email 'github-actions@github.com'
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
           git add games/index.json
-          git commit -m "🔄 Auto-generate games/index.json"
-          git push
+          git diff --cached --quiet || (git commit -m "🔄 Auto-update games/index.json" && git push)
