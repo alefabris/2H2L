@@ -418,16 +418,21 @@ iframe {
   justify-content: space-between;
   font-size: 0.9em;
   margin-bottom: 4px;
-  color: #cfd7ff;
+  color: #bb86fc;
+  font-family: 'Orbitron', sans-serif;
+  text-shadow: 0 0 6px #bb86fc66;
 }
 
 .poll-label a {
-  color: #88ccff;
+  color: #bb86fc;
+  font-weight: 600;
+  letter-spacing: 0.4px;
   text-decoration: none;
 }
 
 .poll-label a:hover {
   text-decoration: underline;
+  color: #ffffff;
 }
 
 .poll-bar-container {
@@ -438,10 +443,12 @@ iframe {
 }
 
 .poll-bar {
-  background: linear-gradient(to right, #48c6ef, #6f86d6);
+  background: linear-gradient(to right, #bb86fc, #d0a8ff);
   height: 100%;
   transition: width 0.5s ease-in-out;
+  box-shadow: 0 0 10px #bb86fc88;
 }
+
 
 .glow-first-place {
   border: 2px solid #bb86fc;
