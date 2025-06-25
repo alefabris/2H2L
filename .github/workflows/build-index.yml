@@ -1,0 +1,39 @@
+name: Build Game Index
+
+on:
+  push:
+    paths:
+      - 'games/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Generate games/index.json
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const gamesDir = path.join(__dirname, 'games');
+            const gameFiles = fs.readdirSync(gamesDir)
+              .filter(file => file.endsWith('.json') && file !== 'index.json')
+              .map(file => file.replace('.json', ''));
+            fs.writeFileSync(path.join(gamesDir, 'index.json'), JSON.stringify(gameFiles, null, 2));
+          "
+
+      - name: Commit and push index.json
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add games/index.json
+          git commit -m "🔄 Auto-generate games/index.json"
+          git push
