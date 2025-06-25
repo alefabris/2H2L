@@ -21,19 +21,11 @@
   <div class="page-wrapper">
     <h1>Activities</h1>
 
-    <p>
-      We meet every <strong>Monday at 20:00</strong> in <strong>Room 1, ground floor</strong> of the
-      <strong>
-        <a href="https://www.google.com/maps/search/?api=1&query=Centro+Socio+Culturale,+Zanè" target="_blank">
-          Centro Socio Culturale, Zanè
-        </a>
-      </strong>
-      (aka the old town hall).
-    </p>
-
-    <section class="event-highlight" id="upcoming-event">
+    <section class="event-highlight" id="event-section">
       <h2>Next Game Night</h2>
-      <p>Loading event details...</p>
+      <div id="event-details">
+        <p>Loading event details...</p>
+      </div>
 
       <div id="poll-results-section" style="margin-top: 30px;">
         <h2 class="expansion-warning" style="font-family: 'Orbitron', sans-serif; color: #9f7aea; text-shadow: 0 0 6px #bb86fc66;">🎲 Poll Results</h2>
@@ -46,19 +38,17 @@
 
   <script>
     async function loadUpcomingEvent() {
-      const box = document.getElementById('upcoming-event');
+      const container = document.getElementById('event-details');
       try {
         const res = await fetch('events/upcoming.json');
         const event = await res.json();
         const formattedDate = new Date(event.date).toLocaleDateString();
-        const infoHTML = `
-          <h2>Next Game Night</h2>
+        container.innerHTML = `
           <p><strong>Date:</strong> ${formattedDate}</p>
           <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
         `;
-        box.innerHTML = infoHTML + box.innerHTML;
       } catch (err) {
-        box.innerHTML = `<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load event or poll results.</p>`;
+        container.innerHTML = `<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load event info.</p>`;
       }
     }
 
