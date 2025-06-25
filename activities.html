@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Games | Z4NE.zone</title>
+  <title>Activities | Z4NE.zone</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
   <nav>
@@ -16,47 +18,95 @@
     </ul>
   </nav>
 
-  <div class="games-wrapper">
-    <h1>Games</h1>
+  <div class="page-wrapper">
+    <h1>Activities</h1>
 
-    <div class="filter-controls">
-      <label>
-        Players:
-        <select id="playerFilter">
-          <option value="">Any</option>
-          <option value="2">2+</option>
-          <option value="3">3+</option>
-          <option value="4">4+</option>
-          <option value="5">5+</option>
-          <option value="6">6+</option>
-        </select>
-      </label>
+    <section class="event-highlight" id="event-section">
+      <h2>Next Game Night</h2>
+      <div id="event-details">
+        <p>Loading event details...</p>
+      </div>
 
-      <label>
-        Duration:
-        <select id="timeFilter">
-          <option value="">Any</option>
-          <option value="30">≤ 30'</option>
-          <option value="60">≤ 60'</option>
-          <option value="90">≤ 90'</option>
-          <option value="120">≤ 120'</option>
-        </select>
-      </label>
+      <div id="poll-results-section" style="margin-top: 40px;">
+        <h2 class="section-title">Poll Results</h2>
+        <div id="poll-results" class="poll-results">Loading poll results...</div>
+      </div>
+    </section>
 
-      <label>
-        Owner:
-        <select id="ownerFilter">
-          <option value="">All</option>
-          <option value="gasca98">gasca98</option>
-          <option value="RushHD">RushHD</option>
-        </select>
-      </label>
+    <h2 class="section-title" style="margin-top: 60px;">Where?</h2>
+    <h3>Here!</h3>
 
-      <button id="clearFilters" class="clear-filters">Reset Filters</button>
-    </div>
+    <div id="map"></div>
   </div>
 
-  <!-- Load game logic from external JS -->
-  <script src="scripts/games.js" defer></script>
+  <script>
+    async function loadUpcomingEvent() {
+      const container = document.getElementById('event-details');
+      try {
+        const res = await fetch('events/upcoming.json');
+        const event = await res.json();
+        const formattedDate = new Date(event.date).toLocaleDateString();
+        container.innerHTML = `
+          <p><strong>Date:</strong> ${formattedDate}</p>
+          <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
+        `;
+      } catch (err) {
+        container.innerHTML = `<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load event info.</p>`;
+      }
+    }
+
+    async function loadPollResults() {
+      const container = document.getElementById('poll-results');
+      try {
+        const res = await fetch('results.json');
+        const data = await res.json();
+        const results = data.votes.filter(v => v.votes > 0);
+        if (!results.length) {
+          container.innerHTML = '<p>No votes recorded yet.</p>';
+          return;
+        }
+
+        const maxVotes = Math.max(...results.map(r => r.votes));
+        results.sort((a, b) => b.votes - a.votes);
+
+        container.innerHTML = '';
+        results.forEach((game, index) => {
+          const barPercent = ((game.votes / maxVotes) * 100).toFixed(1);
+          const glowingClass = index === 0 ? 'glow-first-place' : '';
+          container.innerHTML += `
+            <div class="poll-result ${glowingClass}">
+              <div class="poll-label">
+                <a href="${game.url}" target="_blank">${game.title}</a>
+                <span>${game.votes} vote${game.votes !== 1 ? 's' : ''}</span>
+              </div>
+              <div class="poll-bar-container">
+                <div class="poll-bar" style="width: ${barPercent}%;"></div>
+              </div>
+            </div>
+          `;
+        });
+      } catch (err) {
+        container.innerHTML = '<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load poll results.</p>';
+        console.error(err);
+      }
+    }
+
+    function setupMap() {
+      const map = L.map('map').setView([45.7073, 11.4323], 17);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      }).addTo(map);
+      L.marker([45.7073, 11.4323])
+        .addTo(map)
+        .bindPopup("Centro Socio Culturale di Zanè")
+        .openPopup();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadUpcomingEvent();
+      loadPollResults();
+      setupMap();
+    });
+  </script>
 </body>
 </html>
