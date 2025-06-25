@@ -1,16 +1,42 @@
 [
-  "blood-rage",
-  "cyberpunk-2077",
-  "lands-of-evershade",
-  "marvel-zombies",
-  "nemesis-retaliation",
-  "senjutsu",
-  "shadespire",
-  "skull",
-  "spqrisiko",
-  "the-witcher",
-  "unicorn-overlord",
-  "warhammer-legions",
-  "world-order",
-  "zombicide-green-horde"
+  {
+    "slug": "blood-rage",
+    "owner": "gasca98"
+  },
+  {
+    "slug": "marvel-zombies",
+    "owner": "gasca98"
+  },
+  {
+    "slug": "senjutsu",
+    "owner": "gasca98"
+  },
+  {
+    "slug": "shadespire",
+    "owner": "gasca98"
+  },
+  {
+    "slug": "skull",
+    "owner": "RushHD"
+  },
+  {
+    "slug": "spqrisiko",
+    "owner": "gasca98"
+  },
+  {
+    "slug": "the-witcher",
+    "owner": "gasca98"
+  },
+  {
+    "slug": "unicorn-overlord",
+    "owner": "gasca98"
+  },
+  {
+    "slug": "warhammer-legions",
+    "owner": "gasca98"
+  },
+  {
+    "slug": "zombicide-green-horde",
+    "owner": "gasca98"
+  }
 ]
