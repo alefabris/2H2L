@@ -36,7 +36,7 @@ jobs:
       - name: Post message to Discord
         id: post_message
         run: |
-          MSG_CONTENT=$(cat poll_message.txt | jq -Rs .)
+          MSG_CONTENT=$(jq -Rs . < poll_message.txt | sed 's/\\\\n/\\n/g')
           RESPONSE=$(curl -s -X POST "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages" \
             -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
             -H "Content-Type: application/json" \
