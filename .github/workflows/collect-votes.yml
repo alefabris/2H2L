@@ -3,7 +3,7 @@ name: Collect Poll Votes
 on:
   schedule:
     #- cron: "*/5 * * * *"  # Every 5 minutes
-    - cron: "*/500000000000 * * * *"  # Every 5 minutes
+    - cron: "*/1 * 1* * *"  # Every day 1* of the month
   workflow_dispatch:
 
 jobs:
