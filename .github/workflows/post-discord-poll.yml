@@ -60,7 +60,7 @@ jobs:
             curl -s -X PUT "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages/${MESSAGE_ID}/reactions/${EMOJI_ENC}/@me" \
               -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" > /dev/null
 
-            sleep 0.5  # Helps avoid Discord rate limits
+            sleep 0.1  # Helps avoid Discord rate limits
             i=$((i + 1))
           done <<< "$GAMES"
 
