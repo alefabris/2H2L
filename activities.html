@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Activities | Z4NE.zone</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
   <nav>
@@ -19,13 +17,11 @@
   </nav>
 
   <div class="page-wrapper">
-    <!-- UPCOMING GAME NIGHT -->
     <section class="event-highlight" id="upcoming-event">
       <h2>Next Game Night</h2>
       <p>Loading event details...</p>
     </section>
 
-    <!-- ACTIVITY DESCRIPTION -->
     <div class="activity-wrapper">
       <h1>Activities</h1>
       <p>
@@ -39,66 +35,73 @@
       </p>
     </div>
 
-    <!-- MAP -->
+    <div id="poll-results-section">
+      <h2 class="expansion-warning">🎲 Poll Results</h2>
+      <div id="poll-results" class="poll-results">Loading poll results...</div>
+    </div>
+
     <div id="map"></div>
   </div>
 
-  <!-- UPCOMING EVENT + POLL RESULTS LOADER -->
   <script>
-    async function loadUpcomingEventAndPoll() {
+    async function loadUpcomingEvent() {
       const box = document.getElementById('upcoming-event');
-
       try {
-        const [eventRes, pollRes] = await Promise.all([
-          fetch('events/upcoming.json'),
-          fetch('results.json')
-        ]);
-
-        const event = await eventRes.json();
-        const poll = await pollRes.json();
-
+        const res = await fetch('events/upcoming.json');
+        const event = await res.json();
         const formattedDate = new Date(event.date).toLocaleDateString();
-        const votes = (poll.votes || []).filter(v => v.votes > 0);
-
-        if (!votes.length) throw new Error("No poll votes found");
-
-        votes.sort((a, b) => b.votes - a.votes);
-        const maxVotes = votes[0].votes;
-
-        const resultsHTML = votes.map(v => {
-          const percent = Math.round((v.votes / maxVotes) * 100);
-          return `
-            <div class="poll-result">
-              <div class="poll-label">
-                <a href="${v.url}" target="_blank">${v.title}</a>
-                <span>${v.votes} vote${v.votes !== 1 ? 's' : ''}</span>
-              </div>
-              <div class="poll-bar-container">
-                <div class="poll-bar" style="width: ${percent}%;"></div>
-              </div>
-            </div>
-          `;
-        }).join('');
-
         box.innerHTML = `
           <h2>Next Game Night</h2>
           <p><strong>Date:</strong> ${formattedDate}</p>
           <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
-          <h3>🗳️ Poll Results</h3>
-          <div class="poll-results">${resultsHTML}</div>
         `;
       } catch (err) {
-        console.error(err);
-        box.innerHTML = `
-          <p><img src="assets/icons/warning-purple.svg" class="emoji-icon">
-          Unable to load event or poll results.</p>`;
+        box.innerHTML = `<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load event or poll results.</p>`;
       }
     }
 
-    window.addEventListener('DOMContentLoaded', loadUpcomingEventAndPoll);
+    async function loadPollResults() {
+      const container = document.getElementById('poll-results');
+      try {
+        const res = await fetch('results.json');
+        const data = await res.json();
+        const results = data.votes.filter(v => v.votes > 0);
+        if (!results.length) {
+          container.innerHTML = '<p>No votes recorded yet.</p>';
+          return;
+        }
+
+        const maxVotes = Math.max(...results.map(r => r.votes));
+        results.sort((a, b) => b.votes - a.votes);
+
+        container.innerHTML = '';
+        results.forEach((game, index) => {
+          const barPercent = ((game.votes / maxVotes) * 100).toFixed(1);
+          const glowingClass = index === 0 ? 'glow-first-place' : '';
+          container.innerHTML += `
+            <div class="poll-result ${glowingClass}">
+              <div class="poll-label">
+                <a href="${game.url}" target="_blank">${game.title}</a>
+                <span>${game.votes} vote${game.votes !== 1 ? 's' : ''}</span>
+              </div>
+              <div class="poll-bar-container">
+                <div class="poll-bar" style="width: ${barPercent}%;"></div>
+              </div>
+            </div>
+          `;
+        });
+      } catch (err) {
+        container.innerHTML = '<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load poll results.</p>';
+        console.error(err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadUpcomingEvent();
+      loadPollResults();
+    });
   </script>
 
-  <!-- LEAFLET MAP INIT -->
   <script>
     const map = L.map('map').setView([45.7073, 11.4323], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
