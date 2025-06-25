@@ -5,6 +5,9 @@ on:
     - cron: "0 9 * * 4"  # Every Thursday at 09:00 UTC
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   post_poll:
     runs-on: ubuntu-latest
