@@ -68,11 +68,12 @@
 
         const maxVotes = Math.max(...results.map(r => r.votes));
         results.sort((a, b) => b.votes - a.votes);
-
+        
         container.innerHTML = '';
-        results.forEach((game, index) => {
+        results.forEach((game) => {
           const barPercent = ((game.votes / maxVotes) * 100).toFixed(1);
-          const glowingClass = index === 0 ? 'glow-first-place' : '';
+          const glowingClass = game.votes === maxVotes ? 'glow-first-place' : '';
+        
           container.innerHTML += `
             <div class="poll-result ${glowingClass}">
               <div class="poll-label">
@@ -85,6 +86,7 @@
             </div>
           `;
         });
+
       } catch (err) {
         container.innerHTML = '<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load poll results.</p>';
         console.error(err);
