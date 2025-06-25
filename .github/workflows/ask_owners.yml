@@ -1,0 +1,64 @@
+name: Ask Game Owners for Availability
+
+on:
+  schedule:
+    - cron: "0 9 * * 3"  # every Wednesday at 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ask_owners:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Extract unique game owners
+        id: extract
+        run: |
+          mkdir -p .tmp
+          jq -r '.[]
+            | select(.comingSoon != true)
+            | .owner' games/*.json \
+            | sort | uniq > .tmp/owners.txt
+
+          EMOJIS=(✅ ❌ 🤔)
+          echo "🧩 **Game Owners – Will you be there tomorrow?**\n\nReact with:\n✅ Yes\n❌ No\n🤔 Maybe\n\n" > owner_poll_message.txt
+          i=1
+          while read -r OWNER; do
+            echo "<@${OWNER}>" >> .tmp/mentions.txt  # This line is optional if you map owners to userIDs
+            echo "${EMOJIS[0]} ${OWNER}" >> owner_poll_message.txt
+          done < .tmp/owners.txt
+
+      - name: Post message to Discord
+        id: post_message
+        run: |
+          MSG_CONTENT=$(jq -Rs . < owner_poll_message.txt | sed 's/\\\\n/\\n/g')
+          RESPONSE=$(curl -s -X POST "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages" \
+            -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\": $MSG_CONTENT}")
+
+          echo "$RESPONSE" > .owner_poll_response.json
+          MESSAGE_ID=$(jq -r '.id' .owner_poll_response.json)
+          echo "$MESSAGE_ID" > .owner_poll_id
+          echo "OWNER_POLL_ID=$MESSAGE_ID" >> $GITHUB_ENV
+
+      - name: Add reactions
+        run: |
+          for EMOJI in "✅" "❌" "🤔"; do
+            ENCODED=$(printf "%s" "$EMOJI" | jq -sRr @uri)
+            curl -s -X PUT "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages/${OWNER_POLL_ID}/reactions/${ENCODED}/@me" \
+              -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" > /dev/null
+          done
+
+      - name: Commit poll ID
+        run: |
+          git config --global user.name "poll-bot"
+          git config --global user.email "bot@example.com"
+          git add .owner_poll_id
+          git commit -m "Save owner availability poll ID"
+          git push
