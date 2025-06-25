@@ -6,6 +6,9 @@ on:
     #- cron: "*/1 * 1* * *"  # Every day 1* of the month
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   collect_votes:
     runs-on: ubuntu-latest
