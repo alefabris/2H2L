@@ -22,12 +22,12 @@ jobs:
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
 
           GAMES=$(jq -r '.[]' games/index.json)
-          MSG="🎲 **Vote for the week's board game!**\nReact with the emoji to vote:\n"
+          MSG="🎲 **Vote for the week's board game!**\n\nReact with the emoji to vote:\n\n"
 
           i=0
           while read -r SLUG; do
             TITLE=$(jq -r '.title' "games/${SLUG}.json")
-            MSG+="${EMOJIS[i]} ${TITLE}\n"
+            MSG+="${EMOJIS[i]} ${TITLE}\n\n"
             i=$((i + 1))
           done <<< "$GAMES"
 
