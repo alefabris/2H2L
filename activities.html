@@ -43,50 +43,47 @@
     <div id="map"></div>
   </div>
 
-  <!-- EVENT + POLL RESULTS SCRIPT -->
+  <!-- UPCOMING EVENT AND POLL LOADER -->
   <script>
-    async function loadUpcomingEvent() {
+    async function loadEventAndPoll() {
       const box = document.getElementById('upcoming-event');
 
       try {
-        // Load event info
-        const eventRes = await fetch('events/upcoming.json');
+        const [eventRes, pollRes] = await Promise.all([
+          fetch('events/upcoming.json'),
+          fetch('results.json')
+        ]);
+
+        if (!eventRes.ok || !pollRes.ok) throw new Error("One or more files failed to load.");
+
         const event = await eventRes.json();
+        const poll = await pollRes.json();
+
         const formattedDate = new Date(event.date).toLocaleDateString();
-        const players = event.playersLimit;
-
-        // Load poll results
-        const resultsRes = await fetch('results.json');
-        const results = await resultsRes.json();
-
-        // Render emoji + vote list
-        const pollList = results.votes.map((r, i) => {
-          const emoji = String.fromCodePoint(0x1F1E6 + i); // 🇦 + i
-          return `<li>${emoji} ${r.game}: ${r.votes} vote${r.votes !== 1 ? 's' : ''}</li>`;
-        }).join('');
-
-        const updatedAt = new Date(results.generatedAt).toLocaleString();
+        const voteLines = poll.votes
+          .sort((a, b) => b.votes - a.votes)
+          .map(v => `${v.votes} vote${v.votes !== 1 ? 's' : ''} – ${v.game}`)
+          .join('<br>');
 
         box.innerHTML = `
           <h2>Next Game Night</h2>
           <p><strong>Date:</strong> ${formattedDate}</p>
-          <p><strong>Players:</strong> up to ${players} participants</p>
-          <h3>Current Votes:</h3>
-          <ul>${pollList}</ul>
-          <p><em>Last updated: ${updatedAt}</em></p>
+          <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
+          <p><strong>Poll Results:</strong></p>
+          <p>${voteLines}</p>
         `;
       } catch (err) {
         box.innerHTML = `
           <p><img src="assets/icons/warning-purple.svg" class="emoji-icon">
-          Unable to load event or poll results.</p>`;
+          Unable to load event or poll results. Please try again later.</p>`;
         console.error(err);
       }
     }
 
-    window.addEventListener('DOMContentLoaded', loadUpcomingEvent);
+    window.addEventListener('DOMContentLoaded', loadEventAndPoll);
   </script>
 
-  <!-- MAP INIT -->
+  <!-- LEAFLET MAP INIT -->
   <script>
     const map = L.map('map').setView([45.7073, 11.4323], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
