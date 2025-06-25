@@ -2,11 +2,11 @@ name: Post Weekly Board Game Poll
 
 on:
   schedule:
-    - cron: "0 9 * * 4"  # Every Thursday at 09:00 UTC
+    - cron: "0 9 * * 4" # every Thursday at 9am
   workflow_dispatch:
 
 permissions:
-  contents: write  # Required to push .poll_id file
+  contents: write
 
 jobs:
   post_poll:
@@ -16,16 +16,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Read games and post poll message
+      - name: Create poll message and post to Discord
         run: |
-          GAMES=$(jq -r '.[]' games/index.json)
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
 
+          GAMES=$(jq -r '.[]' games/index.json)
           MSG="🎲 **Vote for the week's board game!**\nReact with the emoji to vote:\n"
 
           i=0
-          while read -r GAME; do
-            MSG+="${EMOJIS[i]} ${GAME}\n"
+          while read -r SLUG; do
+            GAME_JSON="games/${SLUG}.json"
+            TITLE=$(jq -r '.title' "$GAME_JSON")
+            MSG+="${EMOJIS[i]} ${TITLE}\n"
             i=$((i + 1))
           done <<< "$GAMES"
 
@@ -36,35 +38,23 @@ jobs:
 
           echo "$RESPONSE" > .poll_response.json
           MESSAGE_ID=$(jq -r '.id' .poll_response.json)
-
-          if [[ "$MESSAGE_ID" == "null" || -z "$MESSAGE_ID" ]]; then
-            echo "❌ Failed to post poll. Response:"
-            cat .poll_response.json
-            exit 1
-          fi
-
           echo "$MESSAGE_ID" > .poll_id
-          echo "MESSAGE_ID=$MESSAGE_ID" >> $GITHUB_ENV
 
-      - name: Add emoji reactions to poll
+      - name: Add emoji reactions
         run: |
-          GAMES=$(jq -r '.[]' games/index.json)
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
-
+          GAMES=$(jq -r '.[]' games/index.json)
           i=0
           while read -r _; do
             EMOJI=${EMOJIS[i]}
             EMOJI_ENC=$(printf "%s" "$EMOJI" | jq -sRr @uri)
-
-            echo "Adding reaction $EMOJI..."
             curl -s -X PUT "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages/${MESSAGE_ID}/reactions/${EMOJI_ENC}/@me" \
               -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" > /dev/null
-
-            sleep 0.1  # Helps avoid Discord rate limits
+            sleep 0.5
             i=$((i + 1))
           done <<< "$GAMES"
 
-      - name: Commit and push poll ID
+      - name: Commit poll ID
         run: |
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
