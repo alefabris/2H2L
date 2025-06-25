@@ -106,7 +106,7 @@ nav a {
 }
 
 /*  BUTTONS  */
-.join-button, #copySessionId {
+.join-button, #copyDiscordId {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -123,7 +123,7 @@ nav a {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.join-button:hover, #copySessionId:hover {
+.join-button:hover, #copyDiscordId:hover {
   background: #d0a8ff;
   color: #fff;
   box-shadow: 0 0 20px #d0a8ffcc;
@@ -275,21 +275,21 @@ nav a {
   50% { box-shadow: 0 0 20px #bb86fcaa, 0 0 35px #bb86fc55; }
 }
 
-/*  SESSION BOX  */
-.session-id-box {
+/*  DISCORD BOX  */
+.discord-id-box {
   margin: 40px 20px 0;
   text-align: left;
 }
-.session-id-box label {
+.discord-id-box label {
   color: #ccc;
   margin-bottom: 8px;
   display: block;
 }
-.session-id-container {
+.discord-id-container {
   display: flex;
   gap: 10px;
 }
-#sessionId {
+#discordId {
   width: 66ch;
   background: #222;
   color: #fff;
@@ -370,10 +370,10 @@ iframe {
   h2 {
     font-size: 1.5rem;
   }
-  .session-id-container {
+  .discord-id-container {
     flex-direction: column;
   }
-  #sessionId {
+  #discordId {
     width: 100%;
   }
 }
