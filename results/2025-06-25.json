@@ -1,12 +1,12 @@
 {
   "votes": [
-    {"slug": "blood-rage", "title": "Blood Rage", "url": "https://boardgamegeek.com/boardgame/170216/blood-rage", "votes": 1}
+    {"slug": "blood-rage", "title": "Blood Rage", "url": "https://boardgamegeek.com/boardgame/170216/blood-rage", "votes": 2}
 ,
     {"slug": "marvel-zombies", "title": "Marvel Zombies: A Zombicide Game", "url": "https://boardgamegeek.com/boardgame/351817/marvel-zombies-a-zombicide-game", "votes": 0}
 ,
     {"slug": "senjutsu", "title": "Senjutsu: Battle For Japan", "url": "https://boardgamegeek.com/boardgame/343900/senjutsu-battle-for-japan", "votes": 0}
 ,
-    {"slug": "skull", "title": "Skull", "url": "https://boardgamegeek.com/boardgame/92415/skull", "votes": 0}
+    {"slug": "skull", "title": "Skull", "url": "https://boardgamegeek.com/boardgame/92415/skull", "votes": 1}
 ,
     {"slug": "spqrisiko", "title": "S.P.Q.RisiKo!", "url": "https://boardgamegeek.com/boardgame/21503/spqrisiko", "votes": 0}
 ,
@@ -28,5 +28,5 @@
 ,
     {"slug": "world-order", "title": "World Order", "url": "https://gamefound.com/it/projects/hegemonic-project-games/world-order", "votes": 0}
   ],
-  "generatedAt": "2025-06-25T11:55:39Z"
+  "generatedAt": "2025-06-25T12:19:28Z"
 }
