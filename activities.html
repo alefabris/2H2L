@@ -43,56 +43,60 @@
     <div id="map"></div>
   </div>
 
-  <!-- UPCOMING EVENT AND POLL LOADER -->
+  <!-- UPCOMING EVENT + POLL RESULTS LOADER -->
   <script>
-  async function loadEventAndPoll() {
-    const box = document.getElementById('upcoming-event');
-  
-    try {
-      const [eventRes, pollRes] = await Promise.all([
-        fetch('events/upcoming.json'),
-        fetch('results.json')
-      ]);
-  
-      if (!eventRes.ok || !pollRes.ok) throw new Error("File fetch failed");
-  
-      const event = await eventRes.json();
-      const poll = await pollRes.json();
-  
-      const formattedDate = new Date(event.date).toLocaleDateString();
-      const resultsHTML = poll.votes
-        .filter(v => v.votes > 0)
-        .sort((a, b) => b.votes - a.votes)
-        .map(v => {
-          const barWidth = Math.max(5, v.votes * 10); // adjust multiplier as needed
+    async function loadUpcomingEventAndPoll() {
+      const box = document.getElementById('upcoming-event');
+
+      try {
+        const [eventRes, pollRes] = await Promise.all([
+          fetch('events/upcoming.json'),
+          fetch('results.json')
+        ]);
+
+        const event = await eventRes.json();
+        const poll = await pollRes.json();
+
+        const formattedDate = new Date(event.date).toLocaleDateString();
+        const votes = (poll.votes || []).filter(v => v.votes > 0);
+
+        if (!votes.length) throw new Error("No poll votes found");
+
+        votes.sort((a, b) => b.votes - a.votes);
+        const maxVotes = votes[0].votes;
+
+        const resultsHTML = votes.map(v => {
+          const percent = Math.round((v.votes / maxVotes) * 100);
           return `
             <div class="poll-result">
-              <div class="poll-bar" style="width: ${barWidth}%;"></div>
               <div class="poll-label">
                 <a href="${v.url}" target="_blank">${v.title}</a>
-                <span class="poll-count">${v.votes} vote${v.votes !== 1 ? 's' : ''}</span>
+                <span>${v.votes} vote${v.votes !== 1 ? 's' : ''}</span>
+              </div>
+              <div class="poll-bar-container">
+                <div class="poll-bar" style="width: ${percent}%;"></div>
               </div>
             </div>
           `;
-        })
-        .join('');
-  
-      box.innerHTML = `
-        <h2>Next Game Night</h2>
-        <p><strong>Date:</strong> ${formattedDate}</p>
-        <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
-        <p><strong>Poll Results:</strong></p>
-        <p>${voteLines}</p>
-      `;
-    } catch (err) {
-      box.innerHTML = `<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load event or poll results.</p>`;
-      console.error(err);
-    }
-  }
-  
-  window.addEventListener('DOMContentLoaded', loadEventAndPoll);
-  </script>
+        }).join('');
 
+        box.innerHTML = `
+          <h2>Next Game Night</h2>
+          <p><strong>Date:</strong> ${formattedDate}</p>
+          <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
+          <h3>🗳️ Poll Results</h3>
+          <div class="poll-results">${resultsHTML}</div>
+        `;
+      } catch (err) {
+        console.error(err);
+        box.innerHTML = `
+          <p><img src="assets/icons/warning-purple.svg" class="emoji-icon">
+          Unable to load event or poll results.</p>`;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadUpcomingEventAndPoll);
+  </script>
 
   <!-- LEAFLET MAP INIT -->
   <script>
