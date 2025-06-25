@@ -60,11 +60,22 @@
       const poll = await pollRes.json();
   
       const formattedDate = new Date(event.date).toLocaleDateString();
-      const voteLines = poll.votes
+      const resultsHTML = poll.votes
         .filter(v => v.votes > 0)
         .sort((a, b) => b.votes - a.votes)
-        .map(v => `${v.votes} vote${v.votes !== 1 ? 's' : ''} – <a href="${v.url}" target="_blank">${v.title}</a>`)
-        .join('<br>');
+        .map(v => {
+          const barWidth = Math.max(5, v.votes * 10); // adjust multiplier as needed
+          return `
+            <div class="poll-result">
+              <div class="poll-bar" style="width: ${barWidth}%;"></div>
+              <div class="poll-label">
+                <a href="${v.url}" target="_blank">${v.title}</a>
+                <span class="poll-count">${v.votes} vote${v.votes !== 1 ? 's' : ''}</span>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
   
       box.innerHTML = `
         <h2>Next Game Night</h2>
