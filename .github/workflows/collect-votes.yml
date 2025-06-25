@@ -44,7 +44,7 @@ jobs:
 
           NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           TODAY=$(date -u +'%Y-%m-%d')
-          GAMES=$(jq -r '.[]' games/index.json)
+          GAMES=$(jq -r '.[].slug' games/index.json)
 
           echo "{" > results.json
           echo "  \"votes\": [" >> results.json
@@ -55,7 +55,8 @@ jobs:
             TITLE=$(jq -r '.title' "$GAME_JSON")
             URL=$(jq -r '.url' "$GAME_JSON")
             EMOJI="${EMOJIS[i]}"
-            VOTES=$(grep "$EMOJI" .reaction_counts.txt | awk '{print $2}' || echo "0")
+            VOTES=$(grep "$EMOJI" .reaction_counts.txt | awk '{print $2}')
+            VOTES=${VOTES:-0}
             if [ $i -gt 0 ]; then echo "," >> results.json; fi
             echo "    {\"slug\": \"$SLUG\", \"title\": \"$TITLE\", \"url\": \"$URL\", \"votes\": $((VOTES - 1))}" >> results.json
             i=$((i + 1))
