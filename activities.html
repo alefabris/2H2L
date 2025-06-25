@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Activities | Z4NE.zone</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
   <nav>
@@ -17,28 +19,27 @@
   </nav>
 
   <div class="page-wrapper">
+    <h1>Activities</h1>
+
+    <p>
+      We meet every <strong>Monday at 20:00</strong> in <strong>Room 1, ground floor</strong> of the
+      <strong>
+        <a href="https://www.google.com/maps/search/?api=1&query=Centro+Socio+Culturale,+Zanè" target="_blank">
+          Centro Socio Culturale, Zanè
+        </a>
+      </strong>
+      (aka the old town hall).
+    </p>
+
     <section class="event-highlight" id="upcoming-event">
       <h2>Next Game Night</h2>
       <p>Loading event details...</p>
+
+      <div id="poll-results-section" style="margin-top: 30px;">
+        <h2 class="expansion-warning" style="font-family: 'Orbitron', sans-serif; color: #9f7aea; text-shadow: 0 0 6px #bb86fc66;">🎲 Poll Results</h2>
+        <div id="poll-results" class="poll-results">Loading poll results...</div>
+      </div>
     </section>
-
-    <div class="activity-wrapper">
-      <h1>Activities</h1>
-      <p>
-        We meet every <strong>Monday at 20:00</strong> in <strong>Room 1, ground floor</strong> of the
-        <strong>
-          <a href="https://www.google.com/maps/search/?api=1&query=Centro+Socio+Culturale,+Zanè" target="_blank">
-            Centro Socio Culturale, Zanè
-          </a>
-        </strong>
-        (aka the old town hall).
-      </p>
-    </div>
-
-    <div id="poll-results-section">
-      <h2 class="expansion-warning">🎲 Poll Results</h2>
-      <div id="poll-results" class="poll-results">Loading poll results...</div>
-    </div>
 
     <div id="map"></div>
   </div>
@@ -50,11 +51,12 @@
         const res = await fetch('events/upcoming.json');
         const event = await res.json();
         const formattedDate = new Date(event.date).toLocaleDateString();
-        box.innerHTML = `
+        const infoHTML = `
           <h2>Next Game Night</h2>
           <p><strong>Date:</strong> ${formattedDate}</p>
           <p><strong>Players:</strong> up to ${event.playersLimit} participants</p>
         `;
+        box.innerHTML = infoHTML + box.innerHTML;
       } catch (err) {
         box.innerHTML = `<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load event or poll results.</p>`;
       }
@@ -96,21 +98,22 @@
       }
     }
 
+    function setupMap() {
+      const map = L.map('map').setView([45.7073, 11.4323], 17);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      }).addTo(map);
+      L.marker([45.7073, 11.4323])
+        .addTo(map)
+        .bindPopup("Centro Socio Culturale di Zanè")
+        .openPopup();
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       loadUpcomingEvent();
       loadPollResults();
+      setupMap();
     });
-  </script>
-
-  <script>
-    const map = L.map('map').setView([45.7073, 11.4323], 17);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
-    }).addTo(map);
-    L.marker([45.7073, 11.4323])
-      .addTo(map)
-      .bindPopup("Centro Socio Culturale di Zanè")
-      .openPopup();
   </script>
 </body>
 </html>
