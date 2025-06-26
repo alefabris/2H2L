@@ -1,4 +1,4 @@
-name: Ask Game Owners for Availability
+name: Post Owners Poll
 
 on:
   schedule:
