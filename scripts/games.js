@@ -6,18 +6,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearFilters = document.getElementById('clearFilters');
 
   async function fetchGames() {
-    const res = await fetch('games/index.json');
-    const gameSlugs = await res.json();
+    try {
+      const res = await fetch('games/index.json');
+      const gameEntries = await res.json();
 
-    const gameHTMLs = await Promise.all(gameSlugs.map(async (slug) => {
-      const res = await fetch(`games/${slug}.json`);
-      const game = await res.json();
-      return renderGameHTML(game);
-    }));
+      const validGames = gameEntries.filter(g => g.slug && g.slug !== 'owners');
 
-    gamesWrapper.insertAdjacentHTML('beforeend', gameHTMLs.join(''));
-    applyFiltersFromURL();
-    filterGames();
+      const gameHTMLs = await Promise.all(validGames.map(async (g) => {
+        const res = await fetch(`games/${g.slug}.json`);
+        const game = await res.json();
+        return renderGameHTML(game);
+      }));
+
+      gamesWrapper.insertAdjacentHTML('beforeend', gameHTMLs.join(''));
+      applyFiltersFromURL();
+      filterGames();
+    } catch (err) {
+      console.error('Failed to load games:', err);
+    }
   }
 
   function renderGameHTML(game) {
