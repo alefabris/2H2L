@@ -1,4 +1,4 @@
-name: Collect Poll Votes
+name: Collect Games Poll Reactions
 
 on:
   schedule:
