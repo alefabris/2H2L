@@ -1,4 +1,4 @@
-name: Post Owner Availability Poll
+name: Post Owner Poll
 
 on:
   schedule:
