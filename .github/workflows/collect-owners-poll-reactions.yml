@@ -50,7 +50,7 @@ jobs:
 
           NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           TODAY=$(date -u +'%Y-%m-%d')
-          OWNERS=$(jq -r '.[].slug' games/owners.json)
+          OWNERS=$(jq -r '.[]' games/owners.json)
 
           echo "{" > results/owner_results.json
           echo "  \"present\": [" >> results/owner_results.json
