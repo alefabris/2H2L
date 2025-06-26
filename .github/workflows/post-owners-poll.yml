@@ -64,13 +64,11 @@ jobs:
           echo "🧩 **Game Owners – Will you be there next time?**\n\nReact with your emoji to confirm:\n" > owner_poll_message.txt
 
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
-          > .used_owner_emojis.txt
-
           i=0
           while read -r OWNER; do
             EMOJI="${EMOJIS[i]}"
             echo "${EMOJI} ${OWNER}\n" >> owner_poll_message.txt
-            echo "${EMOJI} ${OWNER}" >> .used_owner_emojis.txt
+            MAPPING["$EMOJI"]="$OWNER"
             i=$((i + 1))
           done < .tmp/owners_list.txt
 
@@ -84,18 +82,13 @@ jobs:
           echo "$RESPONSE" > .owner_poll_response.json
           MESSAGE_ID=$(jq -r '.id' .owner_poll_response.json)
 
-          while read -r LINE; do
-            EMOJI=$(cut -d' ' -f1 <<< "$LINE")
+          # Add emoji reactions
+          i=0
+          while read -r OWNER; do
+            EMOJI="${EMOJIS[i]}"
             ENCODED=$(printf "%s" "$EMOJI" | jq -sRr @uri)
             curl -s -X PUT "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages/${MESSAGE_ID}/reactions/${ENCODED}/@me" \
               -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" > /dev/null
             sleep 0.2
-          done < .used_owner_emojis.txt
-
-      - name: Commit emoji map
-        run: |
-          git config --global user.name "poll-bot"
-          git config --global user.email "bot@example.com"
-          git add .used_owner_emojis.txt
-          git commit -m "Posted new owner poll with emoji map"
-          git push || echo "Nothing to push"
+            i=$((i + 1))
+          done < .tmp/owners_list.txt
