@@ -1,4 +1,4 @@
-name: Post Owners Poll
+name: Post Owner Poll
 
 on:
   schedule:
@@ -9,55 +9,29 @@ permissions:
   contents: write
 
 jobs:
-  ask_owners:
+  post_owners_poll:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Extract unique owners and build poll
+      - name: Build poll message from owners.json
         run: |
-          mkdir -p .tmp
-          EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
-
-          jq -r '.[] | select(.comingSoon != true) | .owner' games/*.json | sort -u > .tmp/owners.txt
-
-          echo "🧩 **Game Owners – Will you be there next week?**\n\nReact with the emoji to confirm:\n\n" > owner_poll_message.txt
+          echo "🧩 **Game Owners – Will you be there the next week?**\n\nReact with:\n🇦 Yes\n🇧 No\n\n" > owner_poll_message.txt
 
           i=0
-          while read -r OWNER; do
-            EMOJI=${EMOJIS[i]}
-            echo "$EMOJI $OWNER" >> owner_poll_message.txt
-            echo "$EMOJI $OWNER" >> .tmp/emoji_owner_map.txt
-            i=$((i + 1))
-          done < .tmp/owners.txt
+          EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
+          jq -r '.[]' games/owners.json | while read -r OWNER; do
+            echo "${EMOJIS[i]} ${OWNER}" >> owner_poll_message.txt
+            i=$((i+1))
+          done
 
       - name: Post message to Discord
+        id: post_message
         run: |
           MSG_CONTENT=$(jq -Rs . < owner_poll_message.txt | sed 's/\\\\n/\\n/g')
-          RESPONSE=$(curl -s -X POST "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages" \
+          curl -s -X POST "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages" \
             -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\": $MSG_CONTENT}")
-
-          echo "$RESPONSE" > .owner_poll_response.json
-          jq -r '.id' .owner_poll_response.json > .owner_poll_id
-
-      - name: Add emoji reactions
-        run: |
-          OWNER_POLL_ID=$(cat .owner_poll_id)
-          while read -r EMOJI _; do
-            ENCODED=$(printf "%s" "$EMOJI" | jq -sRr @uri)
-            curl -s -X PUT "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages/${OWNER_POLL_ID}/reactions/${ENCODED}/@me" \
-              -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" > /dev/null
-            sleep 0.1
-          done < .tmp/emoji_owner_map.txt
-
-      - name: Commit owner poll ID and emoji map
-        run: |
-          git config --global user.name "poll-bot"
-          git config --global user.email "bot@example.com"
-          git add .owner_poll_id .tmp/emoji_owner_map.txt
-          git commit -m "Post weekly owner availability poll"
-          git push
+            -d "{\"content\": $MSG_CONTENT}" > /dev/null
