@@ -35,19 +35,19 @@ jobs:
 
           echo "$JSON_CONTENT" > .poll_message.json
 
-      - name: Generate results.json
+      - name: Generate results
         run: |
-          mkdir -p results
+          mkdir -p results/games
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
 
           jq -r '.reactions[]? | "\(.emoji.name) \(.count)"' .poll_message.json > .reaction_counts.txt || true
 
           NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           TODAY=$(date -u +'%Y-%m-%d')
-          GAMES=$(jq -r '.[].slug' games/index.json)
+          GAMES=$(cat .used_game_slugs.txt)
 
-          echo "{" > results.json
-          echo "  \"votes\": [" >> results.json
+          echo "{" > results/games_results.json
+          echo "  \"votes\": [" >> results/games_results.json
 
           i=0
           while read -r SLUG; do
@@ -58,21 +58,21 @@ jobs:
             RAW=$(grep "$EMOJI" .reaction_counts.txt | awk '{print $2}')
             VOTES=${RAW:-0}
             if [ "$VOTES" -gt 0 ]; then VOTES=$((VOTES - 1)); fi
-            if [ $i -gt 0 ]; then echo "," >> results.json; fi
-            echo "    {\"slug\": \"$SLUG\", \"title\": \"$TITLE\", \"url\": \"$URL\", \"votes\": $VOTES}" >> results.json
+            if [ $i -gt 0 ]; then echo "," >> results/games_results.json; fi
+            echo "    {\"slug\": \"$SLUG\", \"title\": \"$TITLE\", \"url\": \"$URL\", \"votes\": $VOTES}" >> results/games_results.json
             i=$((i + 1))
           done <<< "$GAMES"
 
-          echo "  ]," >> results.json
-          echo "  \"generatedAt\": \"${NOW}\"" >> results.json
-          echo "}" >> results.json
+          echo "  ]," >> results/games_results.json
+          echo "  \"generatedAt\": \"${NOW}\"" >> results/games_results.json
+          echo "}" >> results/games_results.json
 
-          cp results.json "results/${TODAY}.json"
+          cp results/games_results.json "results/games/${TODAY}.json"
 
       - name: Commit results
         run: |
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
-          git add results.json results/*.json
-          git commit -m "Update poll results and archive" || echo "No changes to commit."
+          git add results/games_results.json results/games/*.json
+          git commit -m "Update game poll results and archive" || echo "No changes to commit."
           git push || echo "Nothing to push."
