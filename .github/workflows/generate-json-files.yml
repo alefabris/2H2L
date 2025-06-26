@@ -1,4 +1,4 @@
-name: Generate json files # games/index.json and owners.json
+name: Generate json files # games/index.json and games/owners.json
 
 on:
   schedule:
