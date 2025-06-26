@@ -16,12 +16,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Load poll ID
-        run: echo "OWNER_POLL_ID=$(cat .owner_poll_id)" >> "$GITHUB_ENV"
+      - name: Load latest owner poll message
+        run: |
+          mkdir -p .tmp
+          RESPONSE=$(curl -s -X GET "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages?limit=1" \
+            -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}")
+
+          echo "$RESPONSE" > .tmp/latest_owner_message.json
+          OWNER_POLL_ID=$(jq -r '.[0].id' .tmp/latest_owner_message.json)
+          echo "OWNER_POLL_ID=$OWNER_POLL_ID" >> "$GITHUB_ENV"
 
       - name: Fetch poll message
         run: |
-          echo "Fetching owner poll message ID: $OWNER_POLL_ID"
           RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages/${OWNER_POLL_ID}" \
             -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}")
 
@@ -33,20 +39,21 @@ jobs:
             exit 0
           fi
 
-          echo "$JSON_CONTENT" > .owner_poll_message.json
+          echo "$JSON_CONTENT" > .poll_owner_message.json
 
       - name: Generate owner_results.json
         run: |
-          mkdir -p results/owners
+          mkdir -p results results/owners
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
 
-          jq -r '.reactions[]? | "\(.emoji.name) \(.count)"' .owner_poll_message.json > .reaction_counts.txt || true
+          jq -r '.reactions[]? | "\(.emoji.name) \(.count)"' .poll_owner_message.json > .reaction_counts.txt || true
 
           NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           TODAY=$(date -u +'%Y-%m-%d')
+          OWNERS=$(jq -r '.[].slug' games/owners.json)
 
-          echo "{" > owner_results.json
-          echo "  \"present\": [" >> owner_results.json
+          echo "{" > results/owner_results.json
+          echo "  \"present\": [" >> results/owner_results.json
 
           i=0
           FIRST=true
@@ -54,24 +61,24 @@ jobs:
             EMOJI=${EMOJIS[i]}
             RAW=$(grep "$EMOJI" .reaction_counts.txt | awk '{print $2}')
             VOTES=${RAW:-0}
-            if [ "$VOTES" -gt 1 ]; then  # at least one user + bot
-              if [ "$FIRST" = false ]; then echo "," >> owner_results.json; fi
-              echo "    \"$OWNER\"" >> owner_results.json
+            if [ "$VOTES" -gt 1 ]; then  # at least one user vote + bot reaction
+              if [ "$FIRST" = false ]; then echo "," >> results/owner_results.json; fi
+              echo "    \"$OWNER\"" >> results/owner_results.json
               FIRST=false
             fi
             i=$((i + 1))
-          done < .used_owners.txt
+          done <<< "$OWNERS"
 
-          echo "  ]," >> owner_results.json
-          echo "  \"generatedAt\": \"$NOW\"" >> owner_results.json
-          echo "}" >> owner_results.json
+          echo "  ]," >> results/owner_results.json
+          echo "  \"generatedAt\": \"$NOW\"" >> results/owner_results.json
+          echo "}" >> results/owner_results.json
 
-          cp owner_results.json "results/owners/${TODAY}.json"
+          cp results/owner_results.json "results/owners/${TODAY}.json"
 
       - name: Commit results
         run: |
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
-          git add owner_results.json results/owners/*.json
+          git add results/owner_results.json results/owners/*.json
           git commit -m "Update owner poll results and archive" || echo "No changes"
           git push || echo "Nothing to push"
