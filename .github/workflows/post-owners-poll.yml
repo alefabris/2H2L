@@ -18,19 +18,23 @@ jobs:
 
       - name: Build poll message from owners.json
         run: |
-          echo "🧩 **Game Owners – Will you be there the next week?**\n\nReact with:\n🇦 Yes\n🇧 No\n\n" > owner_poll_message.txt
+          echo "🧩 **Game Owners – Will you be there the next week?**" > owner_poll_message.txt
+          echo "" >> owner_poll_message.txt
+          echo "React with your emoji to confirm presence:" >> owner_poll_message.txt
+          echo "" >> owner_poll_message.txt
 
           i=0
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
           jq -r '.[]' games/owners.json | while read -r OWNER; do
             echo "${EMOJIS[i]} ${OWNER}" >> owner_poll_message.txt
+            echo "" >> owner_poll_message.txt
             i=$((i+1))
           done
 
       - name: Post message to Discord
-        id: post_message
         run: |
           MSG_CONTENT=$(jq -Rs . < owner_poll_message.txt | sed 's/\\\\n/\\n/g')
+
           curl -s -X POST "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages" \
             -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
             -H "Content-Type: application/json" \
