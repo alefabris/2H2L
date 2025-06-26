@@ -45,6 +45,13 @@ jobs:
         run: |
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
-          git add .present_owners
+          if [ -s .present_owners ]; then
+            git add .present_owners
+            git commit -m "Update present owners from owner poll"
+            git push
+          else
+            echo "⚠️ No owners marked present. Skipping commit."
+          fi
+
           git commit -m "Update present owners from owner poll"
           git push
