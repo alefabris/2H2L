@@ -14,26 +14,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Load poll ID
-        run: echo "MESSAGE_ID=$(cat .poll_id)" >> "$GITHUB_ENV"
+      - name: Install jq and curl
+        run: sudo apt-get update && sudo apt-get install -y jq curl
 
-      - name: Fetch poll message
+      - name: Get latest poll message from channel
+        id: fetch_message
+        env:
+          TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
         run: |
-          echo "Fetching poll message ID: $MESSAGE_ID"
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages/${MESSAGE_ID}" \
-            -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}")
+          RESPONSE=$(curl -s -H "Authorization: Bot $TOKEN" \
+            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=1")
 
-          HTTP_STATUS=$(echo "$RESPONSE" | grep HTTP_STATUS | cut -d: -f2)
-          JSON_CONTENT=$(echo "$RESPONSE" | sed '/HTTP_STATUS/d')
+          MESSAGE_ID=$(echo "$RESPONSE" | jq -r '.[0].id')
+          echo "MESSAGE_ID=$MESSAGE_ID" >> $GITHUB_ENV
 
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "⚠️ Poll message not found or deleted (status $HTTP_STATUS). Skipping."
-            exit 0
-          fi
-
-          echo "$JSON_CONTENT" > .poll_message.json
+          echo "$RESPONSE" | jq '.[0]' > .poll_message.json
 
       - name: Generate results
         run: |
@@ -44,13 +42,18 @@ jobs:
 
           NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           TODAY=$(date -u +'%Y-%m-%d')
-          GAMES=$(cat .used_game_slugs.txt)
+
+          # Filter games based on present owners
+          jq -n \
+            --slurpfile games games/index.json \
+            --slurpfile owners results/owners_results.json \
+            '$games[0] | map(select(.owner as $o | $owners[0].present | index($o)))' > .filtered_games.json
 
           echo "{" > results/games_results.json
           echo "  \"votes\": [" >> results/games_results.json
 
           i=0
-          while read -r SLUG; do
+          jq -r '.[].slug' .filtered_games.json | while read -r SLUG; do
             GAME_JSON="games/${SLUG}.json"
             TITLE=$(jq -r '.title' "$GAME_JSON")
             URL=$(jq -r '.url' "$GAME_JSON")
@@ -58,10 +61,10 @@ jobs:
             RAW=$(grep "$EMOJI" .reaction_counts.txt | awk '{print $2}')
             VOTES=${RAW:-0}
             if [ "$VOTES" -gt 0 ]; then VOTES=$((VOTES - 1)); fi
-            if [ $i -gt 0 ]; then echo "," >> results/games_results.json; fi
+            [ $i -gt 0 ] && echo "," >> results/games_results.json
             echo "    {\"slug\": \"$SLUG\", \"title\": \"$TITLE\", \"url\": \"$URL\", \"votes\": $VOTES}" >> results/games_results.json
             i=$((i + 1))
-          done <<< "$GAMES"
+          done
 
           echo "  ]," >> results/games_results.json
           echo "  \"generatedAt\": \"${NOW}\"" >> results/games_results.json
