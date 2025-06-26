@@ -2,6 +2,7 @@ blood-rage
 marvel-zombies
 senjutsu
 shadespire
+skull
 spqrisiko
 the-witcher
 unicorn-overlord
