@@ -61,16 +61,19 @@ jobs:
           mkdir -p .tmp
           jq -r '.[]' games/owners.json > .tmp/owners_list.txt
 
-          echo "🧩 **Game Owners – Will you be there next time?**\n\nReact with your emoji to confirm:\n" > owner_poll_message.txt
-
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
           i=0
+          
+          # Start with fresh poll message
+          echo -e "🧩 **Game Owners – Will you be there next time?**\n\nReact with your emoji to confirm:\n" > owner_poll_message.txt
+          
+          # Append each owner line with emoji
           while read -r OWNER; do
             EMOJI="${EMOJIS[i]}"
-            echo "${EMOJI} ${OWNER}\n" >> owner_poll_message.txt
-            MAPPING["$EMOJI"]="$OWNER"
+            echo -e "${EMOJI} ${OWNER}\n" >> owner_poll_message.txt
             i=$((i + 1))
           done < .tmp/owners_list.txt
+
 
           MSG_CONTENT=$(jq -Rs . < owner_poll_message.txt | sed 's/\\\\n/\\n/g')
 
