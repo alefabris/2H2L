@@ -2,7 +2,7 @@ name: Collect Poll Votes
 
 on:
   schedule:
-    - cron: "*/5 * * * *" # every 5'
+    - cron: "*/5 * * * *" # Every 5 minutes
   workflow_dispatch:
 
 permissions:
@@ -21,6 +21,7 @@ jobs:
 
       - name: Fetch poll message
         run: |
+          echo "Fetching poll message ID: $MESSAGE_ID"
           RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "https://discord.com/api/v10/channels/${{ secrets.DISCORD_CHANNEL_ID }}/messages/${MESSAGE_ID}" \
             -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}")
 
@@ -28,9 +29,8 @@ jobs:
           JSON_CONTENT=$(echo "$RESPONSE" | sed '/HTTP_STATUS/d')
 
           if [ "$HTTP_STATUS" != "200" ]; then
-            echo "❌ Failed to fetch poll message. Status: $HTTP_STATUS"
-            echo "$JSON_CONTENT"
-            exit 1
+            echo "⚠️ Poll message not found or deleted (status $HTTP_STATUS). Skipping."
+            exit 0
           fi
 
           echo "$JSON_CONTENT" > .poll_message.json
@@ -40,7 +40,7 @@ jobs:
           mkdir -p results
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
 
-          jq -r '.reactions[]? | "\(.emoji.name) \(.count)"' .poll_message.json > .reaction_counts.txt
+          jq -r '.reactions[]? | "\(.emoji.name) \(.count)"' .poll_message.json > .reaction_counts.txt || true
 
           NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           TODAY=$(date -u +'%Y-%m-%d')
@@ -55,10 +55,11 @@ jobs:
             TITLE=$(jq -r '.title' "$GAME_JSON")
             URL=$(jq -r '.url' "$GAME_JSON")
             EMOJI="${EMOJIS[i]}"
-            VOTES=$(grep "$EMOJI" .reaction_counts.txt | awk '{print $2}')
-            VOTES=${VOTES:-0}
+            RAW=$(grep "$EMOJI" .reaction_counts.txt | awk '{print $2}')
+            VOTES=${RAW:-0}
+            if [ "$VOTES" -gt 0 ]; then VOTES=$((VOTES - 1)); fi
             if [ $i -gt 0 ]; then echo "," >> results.json; fi
-            echo "    {\"slug\": \"$SLUG\", \"title\": \"$TITLE\", \"url\": \"$URL\", \"votes\": $((VOTES - 1))}" >> results.json
+            echo "    {\"slug\": \"$SLUG\", \"title\": \"$TITLE\", \"url\": \"$URL\", \"votes\": $VOTES}" >> results.json
             i=$((i + 1))
           done <<< "$GAMES"
 
@@ -73,5 +74,5 @@ jobs:
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
           git add results.json results/*.json
-          git commit -m "Update poll results and archive"
-          git push
+          git commit -m "Update poll results and archive" || echo "No changes to commit."
+          git push || echo "Nothing to push."
