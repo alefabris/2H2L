@@ -56,18 +56,18 @@ jobs:
             sleep 0.5
           done
 
-      - name: Filter games by present owners
+      - name: Filter games by present owners from results/owner_results.json
         id: filter_games
         run: |
-          if [ ! -f .present_owners ]; then
+          if [ ! -f results/owner_results.json ]; then
             echo "[]"
             exit 1
           fi
 
           jq -n \
             --slurpfile games games/index.json \
-            --slurpfile owners .present_owners \
-            '$games[0] | map(select(.owner as $o | $owners[0] | index($o)))' > .filtered_games.json
+            --slurpfile owners results/owner_results.json \
+            '$games[0] | map(select(.owner as $o | $owners[0].present | index($o)))' > .filtered_games.json
 
       - name: Load game titles and build poll message
         id: build_poll
