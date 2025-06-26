@@ -41,7 +41,7 @@ jobs:
 
           echo "$JSON_CONTENT" > .poll_owner_message.json
 
-      - name: Generate owner_results.json
+      - name: Generate owners_results.json
         run: |
           mkdir -p results results/owners
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
@@ -52,8 +52,8 @@ jobs:
           TODAY=$(date -u +'%Y-%m-%d')
           OWNERS=$(jq -r '.[]' games/owners.json)
 
-          echo "{" > results/owner_results.json
-          echo "  \"present\": [" >> results/owner_results.json
+          echo "{" > results/owners_results.json
+          echo "  \"present\": [" >> results/owners_results.json
 
           i=0
           FIRST=true
@@ -62,23 +62,23 @@ jobs:
             RAW=$(grep "$EMOJI" .reaction_counts.txt | awk '{print $2}')
             VOTES=${RAW:-0}
             if [ "$VOTES" -gt 1 ]; then  # at least one user vote + bot reaction
-              if [ "$FIRST" = false ]; then echo "," >> results/owner_results.json; fi
-              echo "    \"$OWNER\"" >> results/owner_results.json
+              if [ "$FIRST" = false ]; then echo "," >> results/owners_results.json; fi
+              echo "    \"$OWNER\"" >> results/owners_results.json
               FIRST=false
             fi
             i=$((i + 1))
           done <<< "$OWNERS"
 
-          echo "  ]," >> results/owner_results.json
-          echo "  \"generatedAt\": \"$NOW\"" >> results/owner_results.json
-          echo "}" >> results/owner_results.json
+          echo "  ]," >> results/owners_results.json
+          echo "  \"generatedAt\": \"$NOW\"" >> results/owners_results.json
+          echo "}" >> results/owners_results.json
 
-          cp results/owner_results.json "results/owners/${TODAY}.json"
+          cp results/owners_results.json "results/owners/${TODAY}.json"
 
       - name: Commit results
         run: |
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
-          git add results/owner_results.json results/owners/*.json
+          git add results/owners_results.json results/owners/*.json
           git commit -m "Update owner poll results and archive" || echo "No changes"
           git push || echo "Nothing to push"
