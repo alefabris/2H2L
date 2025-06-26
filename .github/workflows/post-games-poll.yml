@@ -1,4 +1,4 @@
-name: Post Weekly Board Game Poll
+name: Post Games Poll
 
 on:
   schedule:
