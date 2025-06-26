@@ -2,7 +2,7 @@ name: Post Owner Availability Poll
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # daily at 09:00 (8 for github)
+    - cron: '0 8 * * *'  # 09:00 CET (08:00 UTC)
   workflow_dispatch:
 
 permissions:
@@ -59,22 +59,20 @@ jobs:
       - name: Build and post availability poll
         run: |
           mkdir -p .tmp
+          jq -r '.[]' games/owners.json > .tmp/owners_list.txt
 
-          jq -r 'to_entries[] | .key + " " + .value' games/owners.json > .tmp/owners_lines.txt
+          echo "🧩 **Game Owners – Will you be there next time?**\n\nReact with your emoji to confirm:\n" > owner_poll_message.txt
 
-          echo "🧩 **Game Owners – Will you be there next time?**\n\nReact with your name to confirm:\n" > owner_poll_message.txt
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
-          i=0
           > .used_owner_emojis.txt
 
-          while read -r LINE; do
-            DISCORD_USER=$(cut -d' ' -f1 <<< "$LINE")
-            DISPLAY_NAME=$(cut -d' ' -f2- <<< "$LINE")
+          i=0
+          while read -r OWNER; do
             EMOJI="${EMOJIS[i]}"
-            echo "${EMOJI} ${DISPLAY_NAME}\n" >> owner_poll_message.txt
-            echo "${EMOJI} ${DISCORD_USER}" >> .used_owner_emojis.txt
-            i=$((i+1))
-          done < .tmp/owners_lines.txt
+            echo "${EMOJI} ${OWNER}\n" >> owner_poll_message.txt
+            echo "${EMOJI} ${OWNER}" >> .used_owner_emojis.txt
+            i=$((i + 1))
+          done < .tmp/owners_list.txt
 
           MSG_CONTENT=$(jq -Rs . < owner_poll_message.txt | sed 's/\\\\n/\\n/g')
 
@@ -86,7 +84,6 @@ jobs:
           echo "$RESPONSE" > .owner_poll_response.json
           MESSAGE_ID=$(jq -r '.id' .owner_poll_response.json)
 
-          # Add emoji reactions
           while read -r LINE; do
             EMOJI=$(cut -d' ' -f1 <<< "$LINE")
             ENCODED=$(printf "%s" "$EMOJI" | jq -sRr @uri)
