@@ -146,6 +146,8 @@ nav a {
 
 /*  GAME CARD  */
 .game {
+  position: relative; /* add */
+  padding-bottom: 2rem; /* add */
   background: #1b1b1f;
   margin: 40px 0;
   padding: 20px;
@@ -159,6 +161,7 @@ nav a {
   margin-bottom: 5px;
 }
 .owner {
+  position: absolute; /* add */
   font-size: 0.75rem;
   color: #999;
   text-align: right;
