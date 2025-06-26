@@ -1,0 +1,54 @@
+name: Collect Owner Poll Reactions
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"  # Every 5 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  collect_owners:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Load poll ID
+        run: echo "OWNER_POLL_ID=$(cat .owner_poll_id)" >> $GITHUB_ENV
+
+      - name: Fetch reactions and determine present owners
+        run: |
+          mkdir -p .tmp
+          touch .present_owners
+
+          while read -r EMOJI OWNER; do
+            ENCODED=$(printf "%s" "$EMOJI" | jq -sRr @uri)
+            RESPONSE=$(curl -s "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages/${OWNER_POLL_ID}/reactions/${ENCODED}?limit=100" \
+              -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}")
+
+            echo "$RESPONSE" > .tmp/reactions.json
+            COUNT=$(jq length .tmp/reactions.json)
+            if [ "$COUNT" -gt 1 ]; then  # ≥ 2 = someone reacted (bot always adds one)
+              echo "$OWNER" >> .present_owners
+              echo "✔️ $OWNER is present (via $EMOJI)"
+            fi
+          done < .tmp/emoji_owner_map.txt
+
+          sort -u .present_owners -o .present_owners
+
+      - name: Commit present owners
+        run: |
+          git config --global user.name "poll-bot"
+          git config --global user.email "bot@example.com"
+
+          if [ -s .present_owners ]; then
+            git add .present_owners
+            git commit -m "Update present owners from emoji-based owner poll"
+            git push
+          else
+            echo "⚠️ No owners marked present. Skipping commit."
+            exit 0
+          fi
