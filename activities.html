@@ -58,7 +58,7 @@
     async function loadPollResults() {
       const container = document.getElementById('poll-results');
       try {
-        const res = await fetch('results.json');
+        const res = await fetch('results/games_results.json');
         const data = await res.json();
         const results = data.votes.filter(v => v.votes > 0);
         if (!results.length) {
