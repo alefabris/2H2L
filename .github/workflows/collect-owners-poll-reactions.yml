@@ -2,88 +2,63 @@ name: Collect Owner Poll Reactions
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # Every 5 minutes
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  collect_owner_poll:
+  collect_owner_votes:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Prepare folder
-        run: mkdir -p .tmp owner-presence
-
-      - name: Fetch latest owner poll message ID
-        id: fetch_message
+      - name: Fetch last owner poll message
+        id: fetch_last_message
         run: |
-          echo "Finding last owner poll message..."
-          # Optional: store a fixed ID in a file if needed, otherwise skip
-          echo "No .owner_poll_id needed in new flow"
+          curl -s "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages?limit=1" \
+            -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" > .tmp/latest_owner_poll.json
 
-      - name: Get reactions from last message with ✅
+          jq -r '.[0].id' .tmp/latest_owner_poll.json > .owner_poll_id
+
+      - name: Fetch reactions and save results
         run: |
-          # Fetch latest 10 messages and find the most recent one with ✅
-          RESPONSE=$(curl -s "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages?limit=10" \
-            -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}")
+          mkdir -p results
+          OWNER_POLL_ID=$(cat .owner_poll_id)
+          EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
+          OWNERS=($(jq -r '.[]' games/owners.json))
 
-          echo "$RESPONSE" > .tmp/recent_messages.json
-          
-          # Get the latest message ID (assuming last poll was the latest one with ✅ reaction)
-          POLL_ID=$(jq -r '[.[] | select(.reactions[]?.emoji.name == "✅")][0].id' .tmp/recent_messages.json)
-
-          if [ -z "$POLL_ID" ] || [ "$POLL_ID" == "null" ]; then
-            echo "❌ No recent poll with ✅ reaction found."
-            exit 0
-          fi
-
-          echo "$POLL_ID" > .tmp/owner_poll_id.txt
-          echo "Using poll message ID: $POLL_ID"
-
-          # Fetch users who reacted with ✅
-          ENCODED=$(printf "✅" | jq -sRr @uri)
-          USERS=$(curl -s "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages/${POLL_ID}/reactions/${ENCODED}?limit=100" \
-            -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}")
-
-          echo "$USERS" > .tmp/reacted_yes.json
-
-      - name: Generate present_owners.json
-        run: |
           NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           TODAY=$(date -u +'%Y-%m-%d')
 
-          jq -r '.[].username' .tmp/reacted_yes.json | sort -u > .tmp/reacted_usernames.txt
+          echo "{" > owners-results.json
+          echo "  \"owners\": [" >> owners-results.json
 
-          echo "{" > present_owners.json
-          echo "  \"date\": \"$TODAY\"," >> present_owners.json
-          echo "  \"collectedAt\": \"$NOW\"," >> present_owners.json
-          echo "  \"owners\": [" >> present_owners.json
+          for i in "${!OWNERS[@]}"; do
+            EMOJI="${EMOJIS[i]}"
+            OWNER="${OWNERS[i]}"
 
-          count=0
-          while read -r DISCORD_USERNAME; do
-            OWNER=$(jq -r --arg user "$DISCORD_USERNAME" '.[$user] // empty' .owners_map.json)
-            if [ -n "$OWNER" ]; then
-              [ "$count" -gt 0 ] && echo "," >> present_owners.json
-              echo "    \"$OWNER\"" >> present_owners.json
-              count=$((count + 1))
-            fi
-          done < .tmp/reacted_usernames.txt
+            ENCODED=$(printf "%s" "$EMOJI" | jq -sRr @uri)
+            COUNT=$(curl -s "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages/${OWNER_POLL_ID}/reactions/${ENCODED}?limit=100" \
+              -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" | jq length)
 
-          echo "  ]" >> present_owners.json
-          echo "}" >> present_owners.json
+            if [ "$i" -gt 0 ]; then echo "," >> owners-results.json; fi
+            echo "    {\"owner\": \"$OWNER\", \"votes\": $((COUNT - 1))}" >> owners-results.json
+          done
 
-          cp present_owners.json "owner-presence/${TODAY}.json"
+          echo "  ]," >> owners-results.json
+          echo "  \"generatedAt\": \"${NOW}\"" >> owners-results.json
+          echo "}" >> owners-results.json
 
-      - name: Commit results
+          cp owners-results.json "results/owners-${TODAY}.json"
+
+      - name: Commit owner poll results
         run: |
           git config --global user.name "poll-bot"
           git config --global user.email "bot@example.com"
-
-          git add present_owners.json owner-presence/*.json
-          git commit -m "Update present game owners from poll"
+          git add owners-results.json results/owners-*.json
+          git commit -m "Update owner poll results" || echo "No changes to commit"
           git push || echo "Nothing to push"
