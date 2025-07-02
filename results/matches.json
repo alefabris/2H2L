@@ -1,0 +1,24 @@
+[
+  {
+    "date": "2025-06-23",
+    "game": "the-witcher",
+    "duration": "2:10",
+    "players": [
+      { "name": "matteo", "score": 5 },
+      { "name": "gasca98", "score": 4 },
+      { "name": "RushHD", "score": 4 }
+    ]
+  },
+  {
+    "date": "2025-07-30",
+    "game": "blood-rage",
+    "duration": "1:30",
+    "players": [
+      { "name": "RushHD", "score": 158 },
+      { "name": "peter", "score": 138 },
+      { "name": "matteo", "score": 107 },
+      { "name": "benny", "score": 72 },
+      { "name": "gasca98", "score": 68 }
+    ]
+  }
+]
