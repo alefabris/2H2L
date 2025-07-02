@@ -23,7 +23,7 @@ jobs:
         id: fetch_message
         env:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          CHANNEL_ID: ${{ secrets.DISCORD_GAMES_CHANNEL_ID }}
         run: |
           RESPONSE=$(curl -s -H "Authorization: Bot $TOKEN" \
             "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=1")
