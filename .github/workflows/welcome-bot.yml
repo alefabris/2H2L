@@ -1,0 +1,51 @@
+name: Welcome Bot
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes
+  workflow_dispatch:
+
+jobs:
+  check_new_intros:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq and curl
+        run: sudo apt-get update && sudo apt-get install -y jq curl
+
+      - name: Fetch recent messages and detect new intros
+        env:
+          TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
+          MOD_CHANNEL_ID: ${{ secrets.DISCORD_MOD_CHANNEL_ID }}
+        run: |
+          mkdir -p .tmp
+          
+          # Get the last 10 messages from general
+          curl -s -H "Authorization: Bot $TOKEN" \
+            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=10" \
+            > .tmp/general_messages.json
+
+          NEW_USERS=$(jq '[.[] | select(.author.bot == false)] | map(.author.username + "#" + .author.discriminator)' .tmp/general_messages.json)
+
+          # Check which usernames are new (not seen before)
+          touch .known_intros.json
+          jq -n --argjson new "$NEW_USERS" --slurpfile known .known_intros.json '
+            {
+              new_users: $new - $known[0],
+              updated_known: ($known[0] + $new | unique)
+            }
+          ' > .tmp/intros_diff.json
+
+          jq '.updated_known' .tmp/intros_diff.json > .known_intros.json
+
+          # If any new users, notify mod channel
+          jq -r '.new_users[]?' .tmp/intros_diff.json | while read USER; do
+            echo "🔔 New intro from $USER"
+            curl -s -X POST "https://discord.com/api/v10/channels/$MOD_CHANNEL_ID/messages" \
+              -H "Authorization: Bot $TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"content\": \"📢 <@&MOD_ROLE_ID> New introduction detected from **$USER** in <#$CHANNEL_ID>!\"}"
+          done
