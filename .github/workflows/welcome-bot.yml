@@ -60,15 +60,28 @@ jobs:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
-          USERNAMES=$(sed 's/^/- /' data/new_users.txt | paste -sd '\n' -)
-          MESSAGE="👋 Welcome to *Z4NE.zone*!\n\nPlease introduce yourself and let us know how you found us:\n\n$USERNAMES\n\nOnce you introduce yourself, a mod will grant you full access.\nCheck out the \`#instructions\` channel to learn more."
+          # Build list of new users like:
+          # - username1
+          # - username2
+          USERNAMES=$(sed 's/^/- /' data/new_users.txt | grep -v '^\s*$' | paste -sd '\n' -)
 
-          JSON=$(jq -n --arg content "$MESSAGE" '{content: $content}')
+          if [ -z "$USERNAMES" ]; then
+            echo "❌ No usernames found to welcome."
+            exit 0
+          fi
 
+          # Build full message using printf (preserves newlines)
+          printf "👋 Welcome to *Z4NE.zone*!\n\nPlease introduce yourself and let us know how you found us:\n\n%s\n\nOnce you introduce yourself, a mod will grant you full access.\nCheck out the \`#instructions\` channel to learn more.\n" "$USERNAMES" > .welcome_msg.txt
+
+          # Convert text file to escaped JSON string
+          MSG_CONTENT=$(jq -Rs . < .welcome_msg.txt | sed 's/\\\\n/\\n/g')
+
+          # Post to Discord
           curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
             -H "Authorization: Bot $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "$JSON"
+            -d "{\"content\": $MSG_CONTENT}"
+
 
       - name: Update welcomed users list
         run: |
