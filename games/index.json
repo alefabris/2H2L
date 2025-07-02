@@ -5,11 +5,6 @@
     "comingSoon": false
   },
   {
-    "slug": "cyberpunk-2077",
-    "owner": "gasca98",
-    "comingSoon": true
-  },
-  {
     "slug": "lands-of-evershade",
     "owner": "gasca98",
     "comingSoon": true
@@ -35,11 +30,6 @@
     "comingSoon": false
   },
   {
-    "slug": "shadespire",
-    "owner": "gasca98",
-    "comingSoon": false
-  },
-  {
     "slug": "skull",
     "owner": "RushHD",
     "comingSoon": false
@@ -61,6 +51,11 @@
   },
   {
     "slug": "warhammer-legions",
+    "owner": "gasca98",
+    "comingSoon": false
+  },
+  {
+    "slug": "warhammer-underworlds-shadespire",
     "owner": "gasca98",
     "comingSoon": false
   },
