@@ -19,21 +19,30 @@ jobs:
       - name: Install jq and curl
         run: sudo apt-get update && sudo apt-get install -y jq curl
 
-      - name: Check if today is 4 days before the next event
+      - name: Check if today is 3 days before the next event and poll wasn't already posted
         id: check_event_day
         run: |
           NEXT_EVENT_DATE=$(jq -r '.date' events/upcoming.json)
+          POLL_RECORD_FILE=".last_games_poll"
+
           NEXT_DATE_EPOCH=$(date -d "$NEXT_EVENT_DATE" +%s)
           TODAY_EPOCH=$(date -u +%s)
           DIFF=$(( (NEXT_DATE_EPOCH - TODAY_EPOCH) / 86400 ))
 
           echo "📅 Days until next event: $DIFF"
 
-          if [ "$DIFF" -ne 4 ]; then
-            echo "🛑 Not 4 days before next event. Skipping."
+          if [ "$DIFF" -ne 3 ]; then
+            echo "🛑 Not 3 days before event."
+            echo "continue=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [ -f "$POLL_RECORD_FILE" ] && grep -q "$NEXT_EVENT_DATE" "$POLL_RECORD_FILE"; then
+            echo "🛑 Poll already posted for this event."
             echo "continue=false" >> $GITHUB_OUTPUT
           else
-            echo "✅ Today is 4 days before. Proceeding."
+            echo "✅ Posting poll today."
+            echo "$NEXT_EVENT_DATE" > "$POLL_RECORD_FILE"
             echo "continue=true" >> $GITHUB_OUTPUT
           fi
 
@@ -60,14 +69,14 @@ jobs:
         id: filter_games
         run: |
           if [ ! -f results/owners_results.json ]; then
-            echo "[]"
-            exit 1
+            echo "[]" > .filtered_games.json
+            exit 0
           fi
 
           jq -n \
             --slurpfile games games/index.json \
             --slurpfile owners results/owners_results.json \
-            '$games[0] | map(select(.owner as $o | $owners[0].present | index($o)))' > .filtered_games.json
+            '$games[0] | map(select(.owner as $o | $owners[0].present | index($o)) | select(.comingSoon != true))' > .filtered_games.json
 
       - name: Build and post poll
         env:
@@ -106,3 +115,11 @@ jobs:
               -H "Authorization: Bot $TOKEN" > /dev/null
             sleep 0.2
           done
+
+      - name: Commit poll record
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .last_games_poll
+          git commit -m "📌 Record last games poll date" || echo "No changes"
+          git push
