@@ -70,7 +70,7 @@ jobs:
             exit 0
           fi
 
-          MESSAGE="👋 Welcome **$USERNAMES** to *Z4NE.zone*!\n\nPlease introduce yourself and let us know how you found us.\nAfter your intro, a mod will grant you access to the rest of the server.\n\nBe sure to read the \#instructions\ channel to learn everything about how we work. Enjoy!"
+          MESSAGE="👋 Welcome **$USERNAMES** to *Z4NE.zone*!\n\nPlease introduce yourself and let us know how you found us.\nAfter your intro, a mod will grant you access to the rest of the server.\n\nBe sure to read the \`#instructions\` channel to learn everything about how we work. Enjoy!"
 
           echo -e "$MESSAGE" > .welcome_msg.txt
           MSG_CONTENT=$(jq -Rs . < .welcome_msg.txt | sed 's/\\\\n/\\n/g')
