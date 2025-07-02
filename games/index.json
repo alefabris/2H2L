@@ -1,46 +1,77 @@
 [
   {
     "slug": "blood-rage",
-    "owner": "gasca98"
+    "owner": "gasca98",
+    "comingSoon": false
+  },
+  {
+    "slug": "cyberpunk-2077",
+    "owner": "gasca98",
+    "comingSoon": true
+  },
+  {
+    "slug": "lands-of-evershade",
+    "owner": "gasca98",
+    "comingSoon": true
   },
   {
     "slug": "marvel-zombies",
-    "owner": "gasca98"
+    "owner": "gasca98",
+    "comingSoon": false
+  },
+  {
+    "slug": "nemesis-retaliation",
+    "owner": "gasca98",
+    "comingSoon": true
   },
   {
     "slug": "owners",
-    "owner": null
+    "owner": null,
+    "comingSoon": false
   },
   {
     "slug": "senjutsu",
-    "owner": "gasca98"
+    "owner": "gasca98",
+    "comingSoon": false
   },
   {
     "slug": "shadespire",
-    "owner": "gasca98"
+    "owner": "gasca98",
+    "comingSoon": false
   },
   {
     "slug": "skull",
-    "owner": "RushHD"
+    "owner": "RushHD",
+    "comingSoon": false
   },
   {
     "slug": "spqrisiko",
-    "owner": "gasca98"
+    "owner": "gasca98",
+    "comingSoon": false
   },
   {
     "slug": "the-witcher",
-    "owner": "gasca98"
+    "owner": "gasca98",
+    "comingSoon": false
   },
   {
     "slug": "unicorn-overlord",
-    "owner": "gasca98"
+    "owner": "gasca98",
+    "comingSoon": false
   },
   {
     "slug": "warhammer-legions",
-    "owner": "gasca98"
+    "owner": "gasca98",
+    "comingSoon": false
+  },
+  {
+    "slug": "world-order",
+    "owner": "RushHD",
+    "comingSoon": true
   },
   {
     "slug": "zombicide-green-horde",
-    "owner": "gasca98"
+    "owner": "gasca98",
+    "comingSoon": false
   }
 ]
