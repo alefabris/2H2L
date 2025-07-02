@@ -2,83 +2,87 @@ name: Welcome Bot
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/5 * * * *"  # Every 5 minutes
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  welcome_bot:
+  welcome:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up environment
-        run: sudo apt-get update && sudo apt-get install -y curl jq
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y jq curl
 
-      - name: Ensure data file exists
+      - name: Create data folder if not exists
+        run: mkdir -p data
+
+      - name: Ensure welcomed_users.txt exists
         run: |
-          mkdir -p data
-          [ -f data/welcomed_users.json ] || echo "[]" > data/welcomed_users.json
+          if [ ! -f data/welcomed_users.txt ]; then
+            touch data/welcomed_users.txt
+          fi
 
       - name: Fetch latest messages from welcome channel
         env:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
-          curl -s -H "Authorization: Bot $TOKEN" \
-            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=50" \
-            > data/welcome_messages.json
+          RESPONSE=$(curl -s -H "Authorization: Bot $TOKEN" \
+            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=50")
 
-      - name: Compare and greet new users
-        id: greet
-        env:
-          TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          MOD_CHANNEL: ${{ secrets.DISCORD_MOD_CHANNEL_ID }}
-          WELCOME_CHANNEL: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
+          echo "$RESPONSE" > data/welcome_messages.json
+
+          # Validate response
+          if ! echo "$RESPONSE" | jq type | grep -q '"array"'; then
+            echo "❌ Invalid or unexpected response from Discord API:"
+            cat data/welcome_messages.json
+            exit 1
+          fi
+
+      - name: Extract current usernames
         run: |
-          jq -r '.[].author | "\(.id):\(.username)"' data/welcome_messages.json > data/current_users.txt
-          jq -r '.[]' data/welcomed_users.json > data/old_users.txt
+          jq -r '.[].author.username' data/welcome_messages.json | sort -u > data/current_users.txt
 
-          NEW_USERS=$(comm -23 <(sort data/current_users.txt) <(sort data/old_users.txt))
+      - name: Determine new users
+        run: |
+          comm -23 data/current_users.txt data/welcomed_users.txt > data/new_users.txt
 
-          if [ -z "$NEW_USERS" ]; then
-            echo "No new users to greet."
-            echo "continue=false" >> $GITHUB_OUTPUT
+      - name: Exit if no new users
+        run: |
+          if [ ! -s data/new_users.txt ]; then
+            echo "✅ No new users to welcome."
             exit 0
           fi
 
-          echo "$NEW_USERS" > data/new_users.txt
-          echo "continue=true" >> $GITHUB_OUTPUT
-
-          # Extract usernames for message
-          NAMES=$(cut -d: -f2 data/new_users.txt | paste -sd ", " -)
-
-          # Greet in welcome channel
-          WELCOME_MSG="👋 Welcome to Z4NE.zone: ${NAMES}! Please wait while a mod reviews your introduction."
-          curl -s -X POST "https://discord.com/api/v10/channels/$WELCOME_CHANNEL/messages" \
-            -H "Authorization: Bot $TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"content\": \"$WELCOME_MSG\"}"
-
-          # Notify mod channel
-          MOD_MSG="👀 New introductions by: ${NAMES}"
-          curl -s -X POST "https://discord.com/api/v10/channels/$MOD_CHANNEL/messages" \
-            -H "Authorization: Bot $TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"content\": \"$MOD_MSG\"}"
-
-          # Update list
-          cat data/old_users.txt data/new_users.txt | sort -u | jq -R . | jq -s . > data/welcomed_users.json
-
-      - name: Commit updated welcomed list
-        if: steps.greet.outputs.continue == 'true'
+      - name: Send welcome message
+        env:
+          TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/welcomed_users.json
-          git commit -m "Update welcomed users list" || echo "No changes"
+          USERS=$(sed 's/^/- /' data/new_users.txt | paste -sd '\n' -)
+          MESSAGE="👋 Welcome to Z4NE.zone!\n\nPlease say hi:\n\n$USERS"
+          JSON=$(jq -n --arg content "$MESSAGE" '{content: $content}')
+
+          curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
+            -H "Authorization: Bot $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$JSON"
+
+      - name: Update welcomed users list
+        run: |
+          cat data/new_users.txt >> data/welcomed_users.txt
+          sort -u data/welcomed_users.txt -o data/welcomed_users.txt
+
+      - name: Commit updated welcomed users
+        run: |
+          git config --global user.name "welcome-bot"
+          git config --global user.email "actions@github.com"
+          git add data/welcomed_users.txt
+          git commit -m "Update welcomed users list" || echo "No changes to commit"
           git push
