@@ -1,8 +1,8 @@
-name: Welcome New Discord Users
+name: Welcome Bot
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # every 5 minutes
+    - cron: "*/5 * * * *"  # Every 5 minutes
   workflow_dispatch:
 
 permissions:
@@ -13,87 +13,72 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install tools
+      - name: Install jq and curl
         run: sudo apt-get update && sudo apt-get install -y jq curl
 
-      - name: Ensure data directory
-        run: mkdir -p data
+      - name: Ensure data folder and user list file exist
+        run: |
+          mkdir -p data
+          [ -f data/welcomed_users.txt ] || touch data/welcomed_users.txt
 
       - name: Fetch messages from welcome channel
         env:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
-          curl -s -H "Authorization: Bot $TOKEN" \
-            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=100" \
-            > data/welcome_messages.json
+          RESPONSE=$(curl -s -H "Authorization: Bot $TOKEN" \
+            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=100")
 
-      - name: Extract user list
-        run: |
-          jq -r '[.[] | select(.author and .author.username) | "\(.author.id):\(.author.username)"] | sort | unique[]' \
-            data/welcome_messages.json > data/current_users.txt
+          echo "$RESPONSE" > data/welcome_messages.json
 
-      - name: Prepare previous user list
-        run: |
-          [ -f data/previous_users.txt ] || touch data/previous_users.txt
-
-      - name: Detect new users
-        run: |
-          comm -13 data/previous_users.txt data/current_users.txt > data/new_users.txt
-
-      - name: Exit if no new users
-        id: check_new
-        run: |
-          COUNT=$(wc -l < data/new_users.txt)
-          echo "Found $COUNT new user(s)"
-          if [ "$COUNT" -eq 0 ]; then
-            echo "no_new=true" >> $GITHUB_OUTPUT
+          if ! echo "$RESPONSE" | jq type | grep -q '"array"'; then
+            echo "❌ Discord API error:"
+            cat data/welcome_messages.json
+            exit 1
           fi
 
-      - name: Stop if no new users
-        if: steps.check_new.outputs.no_new == 'true'
-        run: exit 0
+      - name: Extract usernames
+        run: |
+          jq -r '.[].author.username' data/welcome_messages.json | sort -u > data/current_users.txt
+
+      - name: Determine new users
+        run: |
+          comm -23 data/current_users.txt data/welcomed_users.txt > data/new_users.txt
+
+      - name: Exit if no new users
+        run: |
+          if [ ! -s data/new_users.txt ]; then
+            echo "✅ No new users to welcome."
+            exit 0
+          fi
 
       - name: Send welcome message
         env:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
-          echo "📦 New users:"
-          cat data/new_users.txt || echo "(file not found)"
+          USERNAMES=$(sed 's/^/- /' data/new_users.txt | paste -sd '\n' -)
+          MESSAGE="👋 Welcome to *Z4NE.zone*!\n\nPlease introduce yourself and let us know how you found us:\n\n$USERNAMES\n\nOnce you introduce yourself, a mod will grant you full access.\nCheck out the \`#instructions\` channel to learn more."
 
-          USERNAMES=$(cut -d: -f2 data/new_users.txt | grep -v '^\s*$' | paste -sd " and " -)
+          JSON=$(jq -n --arg content "$MESSAGE" '{content: $content}')
 
-          echo "Parsed usernames: $USERNAMES"
-
-          if [ -z "$USERNAMES" ]; then
-            echo "No valid usernames found — skipping message."
-            exit 0
-          fi
-
-          MESSAGE="👋 Welcome **$USERNAMES** to *Z4NE.zone*!\n\nPlease introduce yourself and let us know how you found us.\nAfter your intro, a mod will grant you access to the rest of the server.\n\nBe sure to read the \`#instructions\` channel to learn everything about how we work. Enjoy!"
-
-          echo -e "$MESSAGE" > .welcome_msg.txt
-          MSG_CONTENT=$(jq -Rs . < .welcome_msg.txt | sed 's/\\\\n/\\n/g')
-
-          echo "⏳ Sending message to Discord..."
-          RESPONSE=$(curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
+          curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
             -H "Authorization: Bot $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"content\": $MSG_CONTENT}")
+            -d "$JSON"
 
-          echo "✅ Discord API response:"
-          echo "$RESPONSE"
-
-
-      - name: Update user list
+      - name: Update welcomed users list
         run: |
-          sort -u data/current_users.txt > data/previous_users.txt
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/previous_users.txt
-          git commit -m "Update previous Discord user list" || echo "No changes"
+          cat data/new_users.txt >> data/welcomed_users.txt
+          sort -u data/welcomed_users.txt -o data/welcomed_users.txt
+
+      - name: Commit updated welcomed user list
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/welcomed_users.txt
+          git commit -m "👋 Update welcomed users list" || echo "No changes"
           git push
