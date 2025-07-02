@@ -60,9 +60,7 @@ jobs:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
-          # Build list of new users like:
-          # - username1
-          # - username2
+          # Build new user list
           USERNAMES=$(sed 's/^/- /' data/new_users.txt | grep -v '^\s*$' | paste -sd '\n' -)
 
           if [ -z "$USERNAMES" ]; then
@@ -70,17 +68,32 @@ jobs:
             exit 0
           fi
 
-          # Build full message using printf (preserves newlines)
-          printf "👋 Welcome to *Z4NE.zone*!\n\nPlease introduce yourself and let us know how you found us:\n\n%s\n\nOnce you introduce yourself, a mod will grant you full access.\nCheck out the \`#instructions\` channel to learn more.\n" "$USERNAMES" > .welcome_msg.txt
+          echo "📋 New users to welcome:"
+          echo "$USERNAMES"
 
-          # Convert text file to escaped JSON string
-          MSG_CONTENT=$(jq -Rs . < .welcome_msg.txt | sed 's/\\\\n/\\n/g')
+          # Create message text file
+          {
+            echo "👋 Welcome to *Z4NE.zone*!"
+            echo ""
+            echo "Please introduce yourself and let us know how you found us:"
+            echo ""
+            echo "$USERNAMES"
+            echo ""
+            echo "Once you introduce yourself, a mod will grant you full access."
+            echo "Check out the \`#instructions\` channel to learn more."
+          } > .welcome_msg.txt
 
-          # Post to Discord
-          curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
+          # Convert message to JSON-safe string
+          MSG=$(jq -Rs . < .welcome_msg.txt | sed 's/\\\\n/\\n/g')
+
+          echo "📤 Sending message:"
+          cat .welcome_msg.txt
+
+          # Send to Discord
+          curl -v -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
             -H "Authorization: Bot $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"content\": $MSG_CONTENT}"
+            -d "{\"content\": $MSG}"
 
 
       - name: Update welcomed users list
