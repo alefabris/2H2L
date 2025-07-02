@@ -2,50 +2,74 @@ name: Welcome Bot
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # every 5 minutes
+    - cron: "*/5 * * * *"  # every 5 minutes
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  check_new_intros:
+  welcome_bot:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install jq and curl
-        run: sudo apt-get update && sudo apt-get install -y jq curl
+      - name: Set up dependencies
+        run: sudo apt-get update && sudo apt-get install -y curl jq
 
-      - name: Fetch recent messages and detect new intros
+      - name: Create temp storage if missing
+        run: mkdir -p .tmp && touch .tmp/seen_users.txt
+
+      - name: Fetch new messages from welcome channel
+        id: fetch_messages
         env:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
-          MOD_CHANNEL_ID: ${{ secrets.DISCORD_MOD_CHANNEL_ID }}
         run: |
-          mkdir -p .tmp
-          
-          # Get the last 10 messages from general
           curl -s -H "Authorization: Bot $TOKEN" \
-            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=10" \
-            > .tmp/general_messages.json
+            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=20" > .tmp/welcome_messages.json
 
-          NEW_USERS=$(jq '[.[] | select(.author.bot == false)] | map(.author.username + "#" + .author.discriminator)' .tmp/general_messages.json)
+      - name: Process new users
+        env:
+          TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          MOD_CHANNEL: ${{ secrets.DISCORD_MOD_CHANNEL_ID }}
+        run: |
+          SEEN_FILE=".tmp/seen_users.txt"
+          jq -r '.[].author | "\(.id):\(.username)"' .tmp/welcome_messages.json | while IFS=: read -r ID USER; do
+            if ! grep -q "$ID" "$SEEN_FILE"; then
+              echo "👋 New user: $USER ($ID)"
+              
+              # Notify mods
+              MSG="👤 **${USER}** just introduced themselves in #welcome!"
+              curl -s -X POST "https://discord.com/api/v10/channels/$MOD_CHANNEL/messages" \
+                -H "Authorization: Bot $TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"content\": \"$MSG\"}" > /dev/null
 
-          # Check which usernames are new (not seen before)
-          touch .known_intros.json
-          jq -n --argjson new "$NEW_USERS" --slurpfile known .known_intros.json '
-            {
-              new_users: $new - $known[0],
-              updated_known: ($known[0] + $new | unique)
-            }
-          ' > .tmp/intros_diff.json
+              # OPTIONAL: Send DM to user (comment out if not needed)
+              curl -s -X POST "https://discord.com/api/v10/users/@me/channels" \
+                -H "Authorization: Bot $TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"recipient_id\": \"$ID\"}" > .tmp/dm_channel.json
+              
+              DM_CHANNEL_ID=$(jq -r '.id' .tmp/dm_channel.json)
 
-          jq '.updated_known' .tmp/intros_diff.json > .known_intros.json
+              curl -s -X POST "https://discord.com/api/v10/channels/$DM_CHANNEL_ID/messages" \
+                -H "Authorization: Bot $TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"content\": \"👋 Welcome to Z4NE.zone, $USER! A mod will review your intro soon. Thanks for joining!\"}" > /dev/null
 
-          # If any new users, notify mod channel
-          jq -r '.new_users[]?' .tmp/intros_diff.json | while read USER; do
-            echo "🔔 New intro from $USER"
-            curl -s -X POST "https://discord.com/api/v10/channels/$MOD_CHANNEL_ID/messages" \
-              -H "Authorization: Bot $TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{\"content\": \"📢 <@&MOD_ROLE_ID> New introduction detected from **$USER** in <#$CHANNEL_ID>!\"}"
+              # Mark user as seen
+              echo "$ID" >> "$SEEN_FILE"
+            fi
           done
+
+      - name: Save seen list
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .tmp/seen_users.txt
+          git commit -m "Track new welcomed users" || echo "No new users"
+          git push
