@@ -1,8 +1,8 @@
-name: Welcome Bot
+name: Welcome New Discord Users
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # every 5 minutes
+    - cron: "*/5 * * * *"  # Every 5 minutes
   workflow_dispatch:
 
 permissions:
@@ -11,6 +11,7 @@ permissions:
 jobs:
   welcome:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -21,7 +22,7 @@ jobs:
       - name: Ensure data directory
         run: mkdir -p data
 
-      - name: Fetch recent messages from welcome channel
+      - name: Fetch messages from welcome channel
         env:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
@@ -30,16 +31,16 @@ jobs:
             "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=100" \
             > data/welcome_messages.json
 
-      - name: Extract current user IDs and usernames
+      - name: Extract user list
         run: |
           jq -r 'map("\(.author.id):\(.author.username)")[]' data/welcome_messages.json \
             | sort -u > data/current_users.txt
 
-      - name: Prepare previous users file if missing
+      - name: Prepare previous user list
         run: |
           [ -f data/previous_users.txt ] || touch data/previous_users.txt
 
-      - name: Compare and detect new users
+      - name: Detect new users
         run: |
           comm -13 data/previous_users.txt data/current_users.txt > data/new_users.txt
 
@@ -52,7 +53,7 @@ jobs:
             echo "no_new=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Exit early
+      - name: Stop if no new users
         if: steps.check_new.outputs.no_new == 'true'
         run: exit 0
 
@@ -62,15 +63,15 @@ jobs:
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
           USERNAMES=$(cut -d: -f2 data/new_users.txt | paste -sd " and " -)
-          
-          MESSAGE="👋 Welcome **$USERNAMES** to *Z4NE.zone*!\n\nPlease introduce yourself and tell us how you found us.\n\nAfter your intro, a mod will give you access to the rest of the channels.\n\nCheck out the \`#instructions\` channel to get familiar with how everything works. Enjoy!"
+          MESSAGE="👋 Welcome **$USERNAMES** to *Z4NE.zone*!\n\nPlease introduce yourself and let us know how you found us.\nAfter your intro, a mod will grant you access to the rest of the server.\n\nBe sure to read the \`#instructions\` channel to learn everything about how we work. Enjoy!"
 
-          JSON=$(jq -n --arg content "$MESSAGE" '{content: $content}')
+          echo -e "$MESSAGE" > .welcome_msg.txt
+          MSG_CONTENT=$(jq -Rs . < .welcome_msg.txt | sed 's/\\\\n/\\n/g')
 
           curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
             -H "Authorization: Bot $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "$JSON"
+            -d "{\"content\": $MSG_CONTENT}"
 
       - name: Update user list
         run: |
@@ -78,5 +79,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/previous_users.txt
-          git commit -m "Update previous users list" || echo "No changes"
+          git commit -m "Update previous Discord user list" || echo "No changes"
           git push
