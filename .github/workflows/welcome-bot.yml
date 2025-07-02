@@ -63,12 +63,7 @@ jobs:
         run: |
           USERNAMES=$(cut -d: -f2 data/new_users.txt | paste -sd " and " -)
           
-          MESSAGE="👋 Welcome **$USERNAMES** to *Z4NE.zone*!
-
-Please introduce yourself and tell us how you found us.
-After your intro, a mod will give you access to the rest of the channels.
-
-Check out the \`#instructions\` channel to get familiar with how everything works. Enjoy!"
+          MESSAGE="👋 Welcome **$USERNAMES** to *Z4NE.zone*!\n\nPlease introduce yourself and tell us how you found us.\n\nAfter your intro, a mod will give you access to the rest of the channels.\n\nCheck out the \`#instructions\` channel to get familiar with how everything works. Enjoy!"
 
           JSON=$(jq -n --arg content "$MESSAGE" '{content: $content}')
 
