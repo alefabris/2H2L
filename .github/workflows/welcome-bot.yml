@@ -5,42 +5,47 @@ on:
     - cron: "*/5 * * * *"  # Every 5 minutes
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   welcome:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install jq and curl
+      - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y jq curl
 
-      - name: Ensure data folder and user list file exist
-        run: |
-          mkdir -p data
-          [ -f data/welcomed_users.txt ] || touch data/welcomed_users.txt
+      - name: Create data folder if not exists
+        run: mkdir -p data
 
-      - name: Fetch messages from welcome channel
+      - name: Ensure welcomed_users.txt exists
+        run: |
+          if [ ! -f data/welcomed_users.txt ]; then
+            touch data/welcomed_users.txt
+          fi
+
+      - name: Fetch latest messages from welcome channel
         env:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
           RESPONSE=$(curl -s -H "Authorization: Bot $TOKEN" \
-            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=100")
+            "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=50")
 
           echo "$RESPONSE" > data/welcome_messages.json
 
+          # Validate response
           if ! echo "$RESPONSE" | jq type | grep -q '"array"'; then
-            echo "❌ Discord API error:"
+            echo "❌ Invalid or unexpected response from Discord API:"
             cat data/welcome_messages.json
             exit 1
           fi
 
-      - name: Extract usernames
+      - name: Extract current usernames
         run: |
           jq -r '.[].author.username' data/welcome_messages.json | sort -u > data/current_users.txt
 
@@ -60,51 +65,24 @@ jobs:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
-          # Build new user list
-          USERNAMES=$(sed 's/^/- /' data/new_users.txt | grep -v '^\s*$' | paste -sd '\n' -)
+          USERS=$(sed 's/^/- /' data/new_users.txt | paste -sd '\n' -)
+          MESSAGE="👋 Welcome to Z4NE.zone!\n\nPlease say hi:\n\n$USERS"
+          JSON=$(jq -n --arg content "$MESSAGE" '{content: $content}')
 
-          if [ -z "$USERNAMES" ]; then
-            echo "❌ No usernames found to welcome."
-            exit 0
-          fi
-
-          echo "📋 New users to welcome:"
-          echo "$USERNAMES"
-
-          # Create message text file
-          {
-            echo "👋 Welcome to *Z4NE.zone*!"
-            echo ""
-            echo "Please introduce yourself and let us know how you found us:"
-            echo ""
-            echo "$USERNAMES"
-            echo ""
-            echo "Once you introduce yourself, a mod will grant you full access."
-            echo "Check out the \`#instructions\` channel to learn more."
-          } > .welcome_msg.txt
-
-          # Convert message to JSON-safe string
-          MSG=$(jq -Rs . < .welcome_msg.txt | sed 's/\\\\n/\\n/g')
-
-          echo "📤 Sending message:"
-          cat .welcome_msg.txt
-
-          # Send to Discord
-          curl -v -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
+          curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
             -H "Authorization: Bot $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"content\": $MSG}"
-
+            -d "$JSON"
 
       - name: Update welcomed users list
         run: |
           cat data/new_users.txt >> data/welcomed_users.txt
           sort -u data/welcomed_users.txt -o data/welcomed_users.txt
 
-      - name: Commit updated welcomed user list
+      - name: Commit updated welcomed users
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "welcome-bot"
+          git config --global user.email "actions@github.com"
           git add data/welcomed_users.txt
-          git commit -m "👋 Update welcomed users list" || echo "No changes"
+          git commit -m "Update welcomed users list" || echo "No changes to commit"
           git push
