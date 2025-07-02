@@ -62,7 +62,12 @@ jobs:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
+          echo "📦 New users:"
+          cat data/new_users.txt || echo "(file not found)"
+
           USERNAMES=$(cut -d: -f2 data/new_users.txt | grep -v '^\s*$' | paste -sd " and " -)
+
+          echo "Parsed usernames: $USERNAMES"
 
           if [ -z "$USERNAMES" ]; then
             echo "No valid usernames found — skipping message."
@@ -74,10 +79,15 @@ jobs:
           echo -e "$MESSAGE" > .welcome_msg.txt
           MSG_CONTENT=$(jq -Rs . < .welcome_msg.txt | sed 's/\\\\n/\\n/g')
 
-          curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
+          echo "⏳ Sending message to Discord..."
+          RESPONSE=$(curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
             -H "Authorization: Bot $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"content\": $MSG_CONTENT}"
+            -d "{\"content\": $MSG_CONTENT}")
+
+          echo "✅ Discord API response:"
+          echo "$RESPONSE"
+
 
       - name: Update user list
         run: |
