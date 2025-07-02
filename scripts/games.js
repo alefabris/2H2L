@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
   const gamesWrapper = document.querySelector('.games-wrapper');
   const playerFilter = document.getElementById('playerFilter');
@@ -11,6 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const gameEntries = await res.json();
 
       const validGames = gameEntries.filter(g => g.slug && g.slug !== 'owners');
+
+      // ✅ Populate owner filter dynamically
+      const uniqueOwners = [...new Set(validGames.map(g => g.owner).filter(Boolean))].sort();
+      uniqueOwners.forEach(owner => {
+        const option = document.createElement('option');
+        option.value = owner;
+        option.textContent = owner;
+        ownerFilter.appendChild(option);
+      });
 
       const gameHTMLs = await Promise.all(validGames.map(async (g) => {
         const res = await fetch(`games/${g.slug}.json`);
