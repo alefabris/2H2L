@@ -33,8 +33,8 @@ jobs:
 
       - name: Extract user list
         run: |
-          jq -r 'map("\(.author.id):\(.author.username)")[]' data/welcome_messages.json \
-            | sort -u > data/current_users.txt
+          jq -r '[.[] | select(.author and .author.username) | "\(.author.id):\(.author.username)"] | sort | unique[]' \
+            data/welcome_messages.json > data/current_users.txt
 
       - name: Prepare previous user list
         run: |
@@ -62,7 +62,6 @@ jobs:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_WELCOME_CHANNEL_ID }}
         run: |
-          # Filter usernames that are non-empty
           USERNAMES=$(cut -d: -f2 data/new_users.txt | grep -v '^\s*$' | paste -sd " and " -)
 
           if [ -z "$USERNAMES" ]; then
@@ -70,16 +69,23 @@ jobs:
             exit 0
           fi
 
-          MESSAGE="👋 Welcome **$USERNAMES** to *Z4NE.zone*!\n\nPlease introduce yourself and let us know how you found us.\nAfter your intro, a mod will grant you access to the rest of the server.\n\nBe sure to read the \`#instructions\` channel to learn everything about how we work. Enjoy!"
+          MESSAGE=$(cat <<EOF
+👋 Welcome **$USERNAMES** to *Z4NE.zone*!
 
-          echo -e "$MESSAGE" > .welcome_msg.txt
+Please introduce yourself and let us know how you found us.
+After your intro, a mod will grant you access to the rest of the server.
+
+Be sure to read the \`#instructions\` channel to learn everything about how we work. Enjoy!
+EOF
+          )
+
+          echo "$MESSAGE" > .welcome_msg.txt
           MSG_CONTENT=$(jq -Rs . < .welcome_msg.txt | sed 's/\\\\n/\\n/g')
 
           curl -s -X POST "https://discord.com/api/v10/channels/$CHANNEL_ID/messages" \
             -H "Authorization: Bot $TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"content\": $MSG_CONTENT}"
-
 
       - name: Update user list
         run: |
