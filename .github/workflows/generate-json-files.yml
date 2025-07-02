@@ -28,7 +28,12 @@ jobs:
           const files = fs.readdirSync(dir).filter(f => f.endsWith('.json') && f !== 'index.json');
           const entries = files.map(f => {
             const json = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf-8'));
-            if (json.comingSoon) return null;
+            return {
+              slug: f.replace('.json', ''),
+              owner: json.owner || null,
+              comingSoon: !!json.comingSoon
+            };
+
             return { slug: f.replace('.json', ''), owner: json.owner || null };
           }).filter(Boolean);
 
