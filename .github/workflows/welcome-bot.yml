@@ -1,4 +1,4 @@
-name: Welcome New Discord Users
+name: Welcome Bot
 
 on:
   schedule:
