@@ -8,29 +8,37 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('games/index.json')
       ]);
 
+      if (!matchesRes.ok || !gamesRes.ok) throw new Error('Failed to fetch data');
+
       const matches = await matchesRes.json();
       const gamesIndex = await gamesRes.json();
 
       const gameSlugToTitle = {};
       await Promise.all(gamesIndex.map(async (entry) => {
         const res = await fetch(`games/${entry.slug}.json`);
-        const gameData = await res.json();
-        gameSlugToTitle[entry.slug] = gameData.title || entry.slug;
+        if (res.ok) {
+          const gameData = await res.json();
+          gameSlugToTitle[entry.slug] = gameData.title || entry.slug;
+        } else {
+          console.warn(`Missing game data for slug: ${entry.slug}`);
+          gameSlugToTitle[entry.slug] = entry.slug;
+        }
       }));
 
       const matchesHTML = matches.map(match => {
         const gameTitle = gameSlugToTitle[match.game] || match.game;
-        const playersHTML = match.players.map(p => `${p.name}: ${p.score}`).join('<br>');
+        const playersHTML = match.players.map(p => `<div class="poll-label"><span>${p.name}</span><span>${p.score}</span></div>
+          <div class="poll-bar-container"><div class="poll-bar" style="width: ${Math.min(100, p.score)}%;"></div></div>`).join('');
+
         return `
-          <div class="game">
-            <h2>${gameTitle}</h2>
-            <p><strong>Date:</strong> ${match.date} | <strong>Duration:</strong> ${match.duration}</p>
-            <p>${playersHTML}</p>
+          <div class="poll-result">
+            <div class="poll-label"><strong>${gameTitle}</strong> <small>${match.date} • ${match.duration}</small></div>
+            ${playersHTML}
           </div>
         `;
       }).join('');
 
-      pastGamesContainer.innerHTML = matchesHTML;
+      pastGamesContainer.innerHTML = matchesHTML || '<p>No past matches found.</p>';
     } catch (error) {
       console.error('Failed to load past matches:', error);
       pastGamesContainer.innerHTML = '<p>Unable to load past games data.</p>';
