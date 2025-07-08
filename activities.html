@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Activities | 2H2L</title>
+  <title>Activities | Z4NE.zone</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -27,16 +27,21 @@
         <p>Loading event details...</p>
       </div>
 
-      <div id="poll-results-section" style="margin-top: 40px;">
-        <h3 class="section-title">Poll Results</h3>
+      <div id="poll-results-section" style="margin-top: 30px;">
+        <h2 class="section-title">Poll Results:</h2>
         <div id="poll-results" class="poll-results">Loading poll results...</div>
       </div>
     </section>
 
-    <h2 class="section-title" style="margin-top: 60px;">Where?</h2>
-    <h3>Here!</h3>
-
+    <h2 class="section-title">Where?</h2>
+    <h3>Centro Socio Culturale di Zanè</h3>
     <div id="map"></div>
+
+    <h2 class="section-title">Past Games</h2>
+    <div id="past-games">
+      <p>Loading past games...</p>
+    </div>
+
   </div>
 
   <script>
@@ -68,12 +73,11 @@
 
         const maxVotes = Math.max(...results.map(r => r.votes));
         results.sort((a, b) => b.votes - a.votes);
-        
+
         container.innerHTML = '';
-        results.forEach((game) => {
+        results.forEach((game, index) => {
           const barPercent = ((game.votes / maxVotes) * 100).toFixed(1);
-          const glowingClass = game.votes === maxVotes ? 'glow-first-place' : '';
-        
+          const glowingClass = index > 0 && game.votes === results[0].votes ? 'glow-first-place' : (index === 0 ? 'glow-first-place' : '');
           container.innerHTML += `
             <div class="poll-result ${glowingClass}">
               <div class="poll-label">
@@ -86,7 +90,6 @@
             </div>
           `;
         });
-
       } catch (err) {
         container.innerHTML = '<p><img src="assets/icons/warning-purple.svg" class="emoji-icon"> Unable to load poll results.</p>';
         console.error(err);
@@ -95,9 +98,7 @@
 
     function setupMap() {
       const map = L.map('map').setView([45.7073, 11.4323], 17);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
-      }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
       L.marker([45.7073, 11.4323])
         .addTo(map)
         .bindPopup("Centro Socio Culturale di Zanè")
@@ -110,5 +111,7 @@
       setupMap();
     });
   </script>
+
+  <script src="scripts/matches.js" defer></script>
 </body>
 </html>
