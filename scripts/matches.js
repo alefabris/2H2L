@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const pastGamesContainer = document.getElementById('past-games');
+  const pastGamesContainer = document.getElementById('match-results');  // ✅ Correct ID
 
   async function loadMatches() {
     try {
@@ -20,15 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
           const gameData = await res.json();
           gameSlugToTitle[entry.slug] = gameData.title || entry.slug;
         } else {
-          console.warn(`Missing game data for slug: ${entry.slug}`);
           gameSlugToTitle[entry.slug] = entry.slug;
         }
       }));
 
       const matchesHTML = matches.map(match => {
         const gameTitle = gameSlugToTitle[match.game] || match.game;
-        const playersHTML = match.players.map(p => `<div class="poll-label"><span>${p.name}</span><span>${p.score}</span></div>
-          <div class="poll-bar-container"><div class="poll-bar" style="width: ${Math.min(100, p.score)}%;"></div></div>`).join('');
+        const playersHTML = match.players.map(p => `
+          <div class="poll-label"><span>${p.name}</span><span>${p.score}</span></div>
+          <div class="poll-bar-container"><div class="poll-bar" style="width: ${Math.min(100, p.score)}%;"></div></div>
+        `).join('');
 
         return `
           <div class="poll-result">
