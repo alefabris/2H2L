@@ -13,21 +13,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const matches = await matchesRes.json();
       const gamesIndex = await gamesRes.json();
 
-      const gameSlugToTitle = {};
+      const gameSlugToData = {};
       await Promise.all(gamesIndex.map(async (entry) => {
         const res = await fetch(`games/${entry.slug}.json`);
         if (res.ok) {
           const gameData = await res.json();
-          gameSlugToTitle[entry.slug] = gameData.title || entry.slug;
+          gameSlugToData[entry.slug] = {
+            title: gameData.title || entry.slug,
+            url: gameData.url || '#'
+          };
         } else {
-          gameSlugToTitle[entry.slug] = entry.slug;
+          gameSlugToData[entry.slug] = {
+            title: entry.slug,
+            url: '#'
+          };
         }
       }));
 
       const matchesHTML = matches.map(match => {
-        const gameTitle = gameSlugToTitle[match.game] || match.game;
+        const gameInfo = gameSlugToData[match.game] || { title: match.game, url: '#' };
+        const { title, url } = gameInfo;
 
-        const maxScore = Math.max(...match.players.map(p => p.score), 1);  // avoid division by zero
+        const maxScore = Math.max(...match.players.map(p => p.score), 1);
 
         const playersHTML = match.players.map(p => {
           const widthPercent = Math.round((p.score / maxScore) * 100);
@@ -41,8 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `
           <div class="poll-result">
-            <h3 class="match-title">${gameTitle}</h3>
-            <small>${match.date} • ${match.duration}</small>
+            <div class="poll-label">
+              <a href="${url}" target="_blank">${title}</a>
+            </div>
+            <div class="poll-label" style="margin-top: 4px;">
+              <span>${match.date}</span><span>${match.duration}</span>
+            </div>
             ${playersHTML}
           </div>
         `;
