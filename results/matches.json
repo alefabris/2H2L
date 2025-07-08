@@ -10,7 +10,7 @@
     ]
   },
   {
-    "date": "2025-07-30",
+    "date": "2025-06-30",
     "game": "blood-rage",
     "duration": "1:30",
     "players": [
@@ -19,6 +19,15 @@
       { "name": "matteo", "score": 107 },
       { "name": "benny", "score": 72 },
       { "name": "gasca98", "score": 68 }
+    ]
+  },
+  {
+    "date": "2025-07-07",
+    "game": "warhammer-underworlds-shadespire",
+    "duration": "1:30",
+    "players": [
+      { "name": "RushHD", "score": 7 },
+      { "name": "gasca98", "score": 8 }
     ]
   }
 ]
