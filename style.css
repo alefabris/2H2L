@@ -281,6 +281,15 @@ nav a {
   50% { box-shadow: 0 0 20px #bb86fcaa, 0 0 35px #bb86fc55; }
 }
 
+/* MATCHES RESULTS */
+.match-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.4rem;
+  margin: 0 0 5px;
+  color: #bb86fc;
+  text-shadow: 0 0 6px #bb86fc66;
+}
+
 /*  DISCORD BOX  */
 .discord-id-box {
   margin: 40px 20px 0;
