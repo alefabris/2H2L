@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const pastGamesContainer = document.getElementById('match-results');  // ✅ Correct ID
+  const pastGamesContainer = document.getElementById('match-results');
 
   async function loadMatches() {
     try {
@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `
           <div class="poll-result">
-            <div class="poll-label"><strong>${gameTitle}</strong> <small>${match.date} • ${match.duration}</small></div>
+            <h3 class="match-title">${gameTitle}</h3>
+            <small>${match.date} • ${match.duration}</small>
             ${playersHTML}
           </div>
         `;
