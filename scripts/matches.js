@@ -26,10 +26,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const matchesHTML = matches.map(match => {
         const gameTitle = gameSlugToTitle[match.game] || match.game;
-        const playersHTML = match.players.map(p => `
-          <div class="poll-label"><span>${p.name}</span><span>${p.score}</span></div>
-          <div class="poll-bar-container"><div class="poll-bar" style="width: ${Math.min(100, p.score)}%;"></div></div>
-        `).join('');
+
+        const maxScore = Math.max(...match.players.map(p => p.score), 1);  // avoid division by zero
+
+        const playersHTML = match.players.map(p => {
+          const widthPercent = Math.round((p.score / maxScore) * 100);
+          return `
+            <div class="poll-label"><span>${p.name}</span><span>${p.score}</span></div>
+            <div class="poll-bar-container">
+              <div class="poll-bar" style="width: ${widthPercent}%;"></div>
+            </div>
+          `;
+        }).join('');
 
         return `
           <div class="poll-result">
