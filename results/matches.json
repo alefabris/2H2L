@@ -29,5 +29,14 @@
       { "name": "gasca98", "score": 8 },
       { "name": "RushHD", "score": 7 }
     ]
+  },
+  {
+    "date": "2025-07-19",
+    "game": "senjutsu",
+    "duration": "1:00",
+    "players": [
+      { "name": "RushHD", "score": 5 },
+      { "name": "gasca98", "score": 3 }
+    ]
   }
 ]
