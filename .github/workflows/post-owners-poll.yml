@@ -19,38 +19,38 @@ jobs:
       - name: Install jq and curl
         run: sudo apt-get update && sudo apt-get install -y jq curl
 
-      - name: Check if today is 4 days before the next event and poll wasn't already posted
+      - name: Check if today is 5 days before the next event and not already posted
         id: check_event_day
         run: |
           NEXT_EVENT_DATE=$(jq -r '.date' events/upcoming.json)
           POLL_RECORD_FILE=".last_owners_poll"
-          NEXT_EPOCH=$(date -d "$NEXT_EVENT_DATE" +%s)
+
+          NEXT_DATE_EPOCH=$(date -d "$NEXT_EVENT_DATE" +%s)
           TODAY_EPOCH=$(date -u +%s)
-          DIFF=$(( (NEXT_EPOCH - TODAY_EPOCH) / 86400 ))
+          DIFF=$(( (NEXT_DATE_EPOCH - TODAY_EPOCH) / 86400 ))
 
           echo "📅 Days until next event: $DIFF"
 
-          if [ "$DIFF" -ne 4 ]; then
-            echo "🛑 Not 4 days before event. Skipping."
+          if [ "$DIFF" -ne 5 ]; then
+            echo "🛑 Not 5 days before event."
             echo "continue=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           if [ -f "$POLL_RECORD_FILE" ] && grep -q "$NEXT_EVENT_DATE" "$POLL_RECORD_FILE"; then
-            echo "🛑 Poll already posted for this date."
+            echo "🛑 Poll already posted for this event."
             echo "continue=false" >> $GITHUB_OUTPUT
-            exit 0
+          else
+            echo "✅ Posting poll today."
+            echo "$NEXT_EVENT_DATE" > "$POLL_RECORD_FILE"
+            echo "continue=true" >> $GITHUB_OUTPUT
           fi
-
-          echo "✅ Ready to post poll."
-          echo "$NEXT_EVENT_DATE" > "$POLL_RECORD_FILE"
-          echo "continue=true" >> $GITHUB_OUTPUT
 
       - name: Exit if not time to post
         if: steps.check_event_day.outputs.continue != 'true'
         run: exit 0
 
-      - name: Delete previous messages from owners channel
+      - name: Delete previous messages from channel
         env:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}
@@ -59,42 +59,47 @@ jobs:
             "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=100")
 
           echo "$MESSAGES" | jq -r '.[].id' | while read -r ID; do
+            echo "Deleting message $ID"
             curl -s -X DELETE "https://discord.com/api/v10/channels/$CHANNEL_ID/messages/$ID" \
-              -H "Authorization: Bot $TOKEN"
+              -H "Authorization: Bot $TOKEN" > /dev/null
             sleep 0.5
           done
 
       - name: Build and post availability poll
         run: |
-          jq -r '.[]' games/owners.json > .owners.txt
+          mkdir -p .tmp
+          jq -r '.[]' games/owners.json > .tmp/owners_list.txt
+
           EMOJIS=(🇦 🇧 🇨 🇩 🇪 🇫 🇬 🇭 🇮 🇯 🇰 🇱 🇲 🇳 🇴 🇵 🇶 🇷 🇸 🇹 🇺 🇻 🇼 🇽 🇾 🇿)
-
-          MSG="🧩 **Game Owners – Will you be there next time?**\n\nReact with your emoji to confirm:\n\n"
           i=0
-          while read -r OWNER; do
-            MSG+="${EMOJIS[i]} ${OWNER}\n"
-            i=$((i + 1))
-          done < .owners.txt
 
-          echo -e "$MSG" > .msg.txt
-          MSG_CONTENT=$(jq -Rs . < .msg.txt | sed 's/\\\\n/\\n/g')
+          echo -e "🧩 **Game Owners – Will you be there next time?**\n\nReact with your emoji to confirm:\n" > owner_poll_message.txt
+
+          while read -r OWNER; do
+            EMOJI="${EMOJIS[i]}"
+            echo -e "${EMOJI} ${OWNER}\n" >> owner_poll_message.txt
+            i=$((i + 1))
+          done < .tmp/owners_list.txt
+
+          MSG_CONTENT=$(jq -Rs . < owner_poll_message.txt | sed 's/\\\\n/\\n/g')
 
           RESPONSE=$(curl -s -X POST "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages" \
             -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "{\"content\": $MSG_CONTENT}")
 
-          MESSAGE_ID=$(echo "$RESPONSE" | jq -r '.id')
+          echo "$RESPONSE" > .owner_poll_response.json
+          MESSAGE_ID=$(jq -r '.id' .owner_poll_response.json)
 
           i=0
           while read -r OWNER; do
             EMOJI="${EMOJIS[i]}"
             ENCODED=$(printf "%s" "$EMOJI" | jq -sRr @uri)
             curl -s -X PUT "https://discord.com/api/v10/channels/${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}/messages/${MESSAGE_ID}/reactions/${ENCODED}/@me" \
-              -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}"
+              -H "Authorization: Bot ${{ secrets.DISCORD_BOT_TOKEN }}" > /dev/null
             sleep 0.2
             i=$((i + 1))
-          done < .owners.txt
+          done < .tmp/owners_list.txt
 
       - name: Commit poll record
         run: |
