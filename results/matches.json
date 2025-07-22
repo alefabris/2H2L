@@ -26,8 +26,17 @@
     "game": "warhammer-underworlds-shadespire",
     "duration": "1:30",
     "players": [
-      { "name": "gasca98", "score": 8 },
-      { "name": "RushHD", "score": 7 }
+      { "name": "gasca98", "score": "NA" },
+      { "name": "RushHD", "score": "NA" }
+    ]
+  },
+  {
+    "date": "2025-07-14",
+    "game": "senjutsu",
+    "duration": "2:00",
+    "players": [
+      { "name": "RushHD", "score": "NA" },
+      { "name": "gasca98", "score": "NA" }
     ]
   },
   {
@@ -37,6 +46,18 @@
     "players": [
       { "name": "RushHD", "score": 5 },
       { "name": "gasca98", "score": 3 }
+    ]
+  },
+  {
+    "date": "2025-07-21",
+    "game": "marvel-zombies",
+    "duration": "2:30",
+    "players": [
+      { "name": "RushHD", "score": "NA" },
+      { "name": "gasca98", "score": "NA" },
+      { "name": "benny", "score": "NA" },
+      { "name": "mattana", "score": "NA" },
+      { "name": "edo", "score": "NA" }
     ]
   }
 ]
