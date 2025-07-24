@@ -25,9 +25,10 @@ jobs:
           NEXT_EVENT_DATE=$(jq -r '.date' events/upcoming.json)
           POLL_RECORD_FILE=".last_owners_poll"
 
-          NEXT_DATE_EPOCH=$(date -d "$NEXT_EVENT_DATE" +%s)
-          TODAY_EPOCH=$(date -u +%s)
-          DIFF=$(( (NEXT_DATE_EPOCH - TODAY_EPOCH) / 86400 ))
+          TODAY_DATE=$(date +%F)
+          NEXT_EVENT_DATE=$(jq -r '.date' events/upcoming.json)
+          DIFF=$(( ($(date -d "$NEXT_EVENT_DATE" +%s) - $(date -d "$TODAY_DATE" +%s)) / 86400 ))
+
 
           echo "📅 Days until next event: $DIFF"
 
