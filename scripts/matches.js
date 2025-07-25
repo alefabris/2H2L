@@ -55,16 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="game-meta" style="margin-top: 4px; justify-content: flex-end; display: flex; gap: 15px;">
               <span>
-                <img src="assets/icons/calendar-purple.svg" class="emoji-icon" />
-                ${match.date}
+                <img src="assets/icons/calendar-purple.svg" class="emoji-icon" />: ${match.date}
               </span>              
               <span>
-                <img src="assets/icons/player-purple.svg" class="emoji-icon" />
-                ${match.players.length} player${match.players.length !== 1 ? 's' : ''}
+                <img src="assets/icons/player-purple.svg" class="emoji-icon" />: ${match.players.length}
               </span>
               <span>
-                <img src="assets/icons/time-purple.svg" class="emoji-icon" />
-                ${match.duration}
+                <img src="assets/icons/time-purple.svg" class="emoji-icon" />: ${match.duration}
               </span>
             </div>
             ${playersHTML}
