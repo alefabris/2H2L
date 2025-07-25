@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="poll-label">
               <a href="${url}" target="_blank">${title}</a>
             </div>
-            <div class="poll-label" style="margin-top: 4px; justify-content: flex-end;">
+            <div class="game-meta" style="margin-top: 4px; justify-content: flex-end; display: flex; gap: 15px;">
               <span>
                 <img src="assets/icons/calendar-purple.svg" class="emoji-icon" />
                 ${match.date}
