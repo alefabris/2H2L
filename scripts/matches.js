@@ -30,7 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }));
 
-      const matchesHTML = matches.map(match => {
+      const matchesHTML = matches
+        .filter(match => match.duration !== "NA")
+        .map(match => {
         const gameInfo = gameSlugToData[match.game] || { title: match.game, url: '#' };
         const { title, url } = gameInfo;
 
