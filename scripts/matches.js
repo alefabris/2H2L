@@ -53,8 +53,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="poll-label">
               <a href="${url}" target="_blank">${title}</a>
             </div>
-            <div class="poll-label" style="margin-top: 4px;">
-              <span>${match.date}</span><span>${match.duration}</span>
+            <div class="poll-label" style="margin-top: 4px; justify-content: flex-end;">
+              <span>
+                <img src="assets/icons/calendar-purple.svg" class="emoji-icon" />
+                ${match.date}
+              </span>
+              <span>
+                <img src="assets/icons/time-purple.svg" class="emoji-icon" />
+                ${match.duration}
+              </span>
             </div>
             ${playersHTML}
           </div>
