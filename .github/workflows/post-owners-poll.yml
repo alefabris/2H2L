@@ -53,19 +53,21 @@ jobs:
         run: exit 0
 
       - name: Delete previous messages from channel
+        if: steps.check_event_day.outputs.continue == 'true'
         env:
           TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           CHANNEL_ID: ${{ secrets.DISCORD_OWNERS_CHANNEL_ID }}
         run: |
           MESSAGES=$(curl -s -H "Authorization: Bot $TOKEN" \
             "https://discord.com/api/v10/channels/$CHANNEL_ID/messages?limit=100")
-
+      
           echo "$MESSAGES" | jq -r '.[].id' | while read -r ID; do
             echo "Deleting message $ID"
             curl -s -X DELETE "https://discord.com/api/v10/channels/$CHANNEL_ID/messages/$ID" \
               -H "Authorization: Bot $TOKEN" > /dev/null
             sleep 0.5
           done
+
 
       - name: Build and post availability poll
         run: |
