@@ -57,14 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
               <span>
                 <img src="assets/icons/calendar-purple.svg" class="emoji-icon" />
                 ${match.date}
+              </span>              
+              <span>
+                <img src="assets/icons/player-purple.svg" class="emoji-icon" />
+                ${match.players.length} player${match.players.length !== 1 ? 's' : ''}
               </span>
               <span>
                 <img src="assets/icons/time-purple.svg" class="emoji-icon" />
                 ${match.duration}
-              </span>
-              <span>
-                <img src="assets/icons/player-purple.svg" class="emoji-icon" />
-                ${match.players.length} player${match.players.length !== 1 ? 's' : ''}
               </span>
             </div>
             ${playersHTML}
