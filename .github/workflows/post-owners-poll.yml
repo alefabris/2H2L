@@ -19,21 +19,21 @@ jobs:
       - name: Install jq and curl
         run: sudo apt-get update && sudo apt-get install -y jq curl
 
-      - name: Check if today is 5 days before the next event and not already posted
+      - name: Check if today is 3 days before the next event and not already posted
         id: check_event_day
         run: |
           NEXT_EVENT_DATE=$(jq -r '.date' events/upcoming.json)
           POLL_RECORD_FILE=".last_owners_poll"
 
           TODAY_DATE=$(date +%F)
-          NEXT_EVENT_DATE=$(jq -r '.date' events/upcoming.json)
-          DIFF=$(( ($(date -d "$NEXT_EVENT_DATE" +%s) - $(date -d "$TODAY_DATE" +%s)) / 86400 ))
-
+          NEXT_EPOCH=$(date -d "$NEXT_EVENT_DATE" +%s)
+          TODAY_EPOCH=$(date -d "$TODAY_DATE" +%s)
+          DIFF=$(( (NEXT_EPOCH - TODAY_EPOCH) / 86400 ))
 
           echo "📅 Days until next event: $DIFF"
 
-          if [ "$DIFF" -ne 5 ]; then
-            echo "🛑 Not 5 days before event."
+          if [ "$DIFF" -ne 3 ]; then
+            echo "🛑 Not 3 days before event."
             echo "continue=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -41,11 +41,12 @@ jobs:
           if [ -f "$POLL_RECORD_FILE" ] && grep -q "$NEXT_EVENT_DATE" "$POLL_RECORD_FILE"; then
             echo "🛑 Poll already posted for this event."
             echo "continue=false" >> $GITHUB_OUTPUT
-          else
-            echo "✅ Posting poll today."
-            echo "$NEXT_EVENT_DATE" > "$POLL_RECORD_FILE"
-            echo "continue=true" >> $GITHUB_OUTPUT
+            exit 0
           fi
+
+          echo "✅ Posting poll today."
+          echo "$NEXT_EVENT_DATE" > "$POLL_RECORD_FILE"
+          echo "continue=true" >> $GITHUB_OUTPUT
 
       - name: Exit if not time to post
         if: steps.check_event_day.outputs.continue != 'true'
