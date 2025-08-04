@@ -71,5 +71,16 @@
       { "name": "mattana", "score": "NA" },
       { "name": "peter", "score": "NA" }
     ]
+  },
+  {
+    "date": "2025-08-02",
+    "game": "magic",
+    "duration": "NA",
+    "players": [
+      { "name": "RushHD", "score": "NA" },
+      { "name": "gasca98", "score": "NA" },
+      { "name": "benny", "score": "NA" },
+      { "name": "matteo", "score": "NA" }
+    ]
   }
 ]
